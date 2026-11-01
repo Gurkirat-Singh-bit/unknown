@@ -29,6 +29,7 @@
       "devDependencies": {
         "@cloudflare/workers-types": "^4.0.0",
         "@types/bun": "latest",
+        "miniflare": "^4.20260730.0",
         "typescript": "7.0.2",
       },
     },

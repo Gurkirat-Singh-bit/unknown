@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./sources": "./src/sources.ts"
+    "./sources": "./src/sources.ts",
+    "./images": "./src/images.ts"
   },
   "scripts": {
     "check-types": "tsc --noEmit"

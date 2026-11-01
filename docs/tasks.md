@@ -2,7 +2,7 @@
 
 Goal: collect Devpost hackathons on a schedule, store them in D1, and let the web app read them server-side.
 
-This is the work plan; unchecked items have not been implemented. Initial scope is Devpost only. Browser Run and R2 are deferred until needed. Drizzle and Zod are adopted in shared database and core packages. Frontend integration remains a separate task; no frontend application files were modified.
+This is the work plan; unchecked items have not been implemented. Initial scope is Devpost only. Browser Run is deferred. R2 thumbnail copying is implemented locally; remote setup remains pending. Drizzle and Zod are adopted in shared database and core packages. Frontend integration remains a separate task; no frontend application files were modified.
 
 ## 1. Rename and simplify the scraper — Codex
 
@@ -82,4 +82,15 @@ Done when: the frontend displays real stored Devpost events and its filters work
 - [ ] Confirm a scheduled run updates data shown by the frontend.
 - [ ] Update implementation status and copy the finished docs to Second Brain.
 
-Next: agree on normalized event fields and database access in steps 3 and 4.
+## 9. Store event images in R2 — Codex
+
+- [x] Copy HTTPS thumbnails to a dedicated R2 binding before D1 writes, and persist public R2 URLs.
+- [x] Reuse recent objects, refresh after 24 hours, and bound download sizes/timeouts.
+- [x] Verify local R2 metadata, image bytes, D1 URLs, caching, and event updates despite image failures.
+- [x] Document binding/domain setup and provide an example Worker configuration.
+- [ ] Create the real image bucket and configure its public custom domain and Worker binding.
+- [x] Share a 50-external-request budget across listing pages and images; defer thumbnails across runs, prioritize missing images, and keep event updates independent of image failures.
+- [ ] Measure deployed CPU/internal calls against Free limits; split processing further if required.
+- [ ] Verify deployed downloads/public serving and define cleanup for unreferenced objects.
+
+Next: configure D1/R2 resources and verify a deployed scrape, then add CI/CD.

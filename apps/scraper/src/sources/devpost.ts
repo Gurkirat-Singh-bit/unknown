@@ -1,7 +1,8 @@
 import { sources } from '@repo/config/sources'
 import { devpostPageSchema, type DevpostEvent } from '@repo/core/schemas/devpost'
+import { RequestBudget } from '../request-budget'
 
-export async function scrapeDevpost(): Promise<DevpostEvent[]> {
+export async function scrapeDevpost(budget = new RequestBudget()): Promise<DevpostEvent[]> {
   const config = sources.devpost
   const events = new Map<number, DevpostEvent>()
 
@@ -16,8 +17,10 @@ export async function scrapeDevpost(): Promise<DevpostEvent[]> {
     }
     url.searchParams.set('page', String(page))
 
+    if (!budget.take()) throw new Error('Devpost collection exhausted its external request budget')
     const response = await fetch(url, {
       signal: AbortSignal.timeout(config.requestTimeoutMs),
+      redirect: 'error',
     })
 
     if (!response.ok) {

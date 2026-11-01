@@ -2,6 +2,7 @@ import { afterEach, expect, test } from 'bun:test'
 import { scrapeDevpost } from '../src/sources/devpost'
 import { normalizeDevpostEvent } from '../src/normalizers/devpost'
 import { devpostEventSchema } from '@repo/core/schemas/devpost'
+import { RequestBudget } from '../src/request-budget'
 
 const originalFetch = globalThis.fetch
 afterEach(() => { globalThis.fetch = originalFetch })
@@ -39,6 +40,12 @@ test('collects open and upcoming listings across pages, deduplicating stable IDs
 test('accepts a valid empty catalogue', async () => {
   mockResponses([page([], 0)])
   expect(await scrapeDevpost()).toEqual([])
+})
+
+test('never fetches beyond its request budget or accepts partial collection', async () => {
+  const urls = mockResponses([page([event(1), event(2)], 3)])
+  await expect(scrapeDevpost(new RequestBudget(1))).rejects.toThrow('request budget')
+  expect(urls).toHaveLength(1)
 })
 
 test('rejects HTTP failures and HTML challenge pages', async () => {

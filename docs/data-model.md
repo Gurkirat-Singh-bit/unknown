@@ -11,7 +11,7 @@ The product event contract is `packages/core/src/schemas/event.ts`; the matching
 | `description`, `location`, `city`, `country` | Nullable event text and structured location. |
 | `startsAt`, `endsAt` | Nullable actual event timestamps. Known timestamps normalize to UTC ISO 8601; end cannot precede start. |
 | `submissionPeriod` | Source-provided submission-period text, separate from actual event dates. |
-| `organizer`, `imageUrl`, `prizeText` | Nullable listing details. |
+| `organizer`, `imageUrl`, `prizeText` | Nullable listing details. Persisted imageUrl points at our public R2 copy. |
 | `tags` | String array; stored as JSON text in SQLite. |
 | `scrapedAt` | Required successful collection timestamp. |
 | `id`, `createdAt`, `updatedAt` | Added by persistence: deterministic source identity, first insertion time, and latest accepted ingestion time. |
@@ -33,7 +33,7 @@ The source contract remains `@repo/core/schemas/devpost`. Its normalizer is `app
 
 - Devpost's numeric ID becomes `sourceId`; event type is `hackathon`.
 - Titles, source URLs, organizer, theme tags, images, and display location are mapped to the common contract.
-- Protocol-relative image URLs become absolute HTTPS URLs.
+- Protocol-relative source image URLs become absolute HTTPS URLs. Before D1 persistence, the R2 storage step replaces these with public bucket URLs; missing thumbnails remain null.
 - An explicit `Online` location maps to online mode. Other ambiguous locations remain unknown rather than inventing a city, country, or attendance mode.
 - Prize markup is stripped into text. Do not render source text as trusted HTML.
 - Formatted submission periods are retained as text. Actual event start/end dates and full descriptions stay null until a reliable detail source is added.

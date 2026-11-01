@@ -1,0 +1,23 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "unknown-scraper",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": false,
+  "triggers": { "crons": ["0 */6 * * *"] },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "unknown-events",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "migrations_dir": "../../packages/db/migrations"
+    }
+  ],
+  "r2_buckets": [
+    { "binding": "EVENT_IMAGES", "bucket_name": "unknown-event-images" }
+  ],
+  "vars": {
+    "IMAGE_PUBLIC_BASE_URL": "https://images.example.com"
+  },
+  "observability": { "enabled": true }
+}

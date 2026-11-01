@@ -9,7 +9,7 @@ Public event listings (initially Devpost)
 Scheduled Hono Cloudflare Worker (every 6 hours)
    fetch → parse → normalize → deduplicate/upsert
                   │
-                  ├────► Cloudflare R2 (optional image storage)
+                  ├────► Cloudflare R2 (event thumbnails)
                   ▼
              Cloudflare D1
                   │
@@ -34,7 +34,7 @@ D1 is the structured store for event details and source provenance. The shared m
 
 ### R2
 
-R2 is planned for event images or other large assets. Decide whether to copy images into R2 or keep source-hosted URLs. The schema should retain an image URL either way.
+The scraper copies event thumbnails into a dedicated R2 bucket before D1 upserts. Listing and image fetches share a 50-request budget; thumbnails are deferred across runs while event updates continue. D1 stores their public R2 URLs. Images are cached for 24 hours and refreshed under stable source-URL-hash keys. A real bucket binding and public custom domain remain to be configured; see `apps/scraper/README.md`.
 
 ### Next.js
 
@@ -63,5 +63,5 @@ The collector validates the minimal source shape and deduplicates by ID. Shared 
 - Choose scrape logging, retry, and source rate-limit behavior.
 - Define how missing fields and changed event details are handled.
 - Set event expiry policy.
-- Decide image copying and retention in R2.
+- Configure the R2 image bucket/public domain and decide retention for unreferenced objects.
 - Decide whether cross-platform duplicates should be merged; source URL uniqueness alone only prevents duplicate records from the same source listing.

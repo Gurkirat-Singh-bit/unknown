@@ -21,7 +21,7 @@ Event details are scattered across many websites. Developers, student builders, 
 - Cloudflare D1 for structured event records.
 - Next.js for the frontend; the intended design queries D1 server-side without a separate read API.
 - A scheduled scrape every six hours, as specified in the latest project notes.
-- Cloudflare R2 for event images if image copying is needed.
+- Cloudflare R2 for copied event thumbnails; D1 retains their public image URLs.
 
 Accounts, social features, user-submitted events, ticket sales, and payment flows are outside the first version. Saved events, alerts, recommendations, and additional sources are possible later additions.
 

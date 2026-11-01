@@ -15,10 +15,12 @@ Reviewed the scraper entry point, Devpost collection and normalization, shared c
 ## Verification
 
 - The live combined Devpost request reported 166 listings. Full collection returned 166 unique IDs and all records normalized successfully: 44 open and 122 upcoming.
-- Eight scraper tests cover multi-page open/upcoming collection, duplicate IDs, valid empty results, HTTP failures, HTML challenges, invalid JSON/response shapes, incomplete/repeated pages, status mismatches, inconsistent totals, source normalization, and URL schemes.
+- Nine scraper tests cover multi-page open/upcoming collection, duplicate IDs, valid empty results, HTTP failures, HTML challenges, invalid JSON/response shapes, incomplete/repeated pages, status mismatches, inconsistent totals, source normalization, and URL schemes.
 - Six local Miniflare D1 tests cover repeat and older upserts, input validation before writes, active-event filtering, search/pagination, dates, and multiple write batches.
 - Config, core, database, and scraper type checks pass, including database/scraper tests. Migration generation reports no schema drift.
 - Before this review, a live open-only run was also persisted to isolated local D1 and read back: 44 rows, still 44 after repeat ingestion. The expanded 166-record run verified live collection/normalization; the local database tests verify persistence and multiple batches separately.
+- R2 follow-up: twelve additional tests use isolated Miniflare R2/D1 to verify copied bytes and metadata, cache reuse and refresh, absent images, invalid responses, streamed size limits, public URL settings and object-key alignment, and scheduled persistence, bounded external requests, progress across runs, and non-blocking image failures.
+- A real Devpost thumbnail for PayPal AI Hackathon was downloaded (37,180 bytes, PNG), copied into isolated local R2, and its public-format URL persisted/read back in isolated D1. This did not create or modify production resources or verify public serving.
 
 Counts are observations, not fixed limits or worldwide totals. The source statuses describe submission availability. We do not infer exact ongoing event dates from them.
 
@@ -34,7 +36,11 @@ HTTP 429, 403, timeouts, malformed data, and HTML challenges fail the run. Bound
 
 ### Deployment
 
-The scraper has no dedicated deploy configuration, real D1 binding, applied production migration, or Cron Trigger. Root Cloudflare configuration belongs to the web/Vinext setup, not the scheduled scraper. Local Bun collection and local D1 tests do not prove outbound access or resource usage in a deployed Cloudflare Worker. Configure the scraper separately and verify its limits/runtime before deployment.
+The scraper has an example configuration with D1/R2 bindings and a six-hour cron, but no active deploy configuration, real D1/R2 binding, public image domain, applied production migration, or active Cron Trigger. Root Cloudflare configuration belongs to the web/Vinext setup, not the scheduled scraper. Local Bun collection and local D1/R2 tests do not prove outbound access, public image serving, or resource usage in a deployed Cloudflare Worker. Configure the scraper separately and verify its limits/runtime before deployment. A shared budget caps external fetches at 50, and image work continues across runs. This addresses external requests only: Free Cron CPU is limited to 10 ms and still needs deployed measurement; internal calls and account-wide usage must also be verified. See [Workers limits](https://developers.cloudflare.com/workers/platform/limits/).
+
+### R2 images
+
+Images are required to use HTTPS and supported raster MIME types, with bounded bytes and timeouts. Source URLs are hashed for stable object keys; R2 metadata controls 24-hour reuse, followed by refresh under the same key. Public caching lasts one hour, so a refreshed image may be briefly stale. Files are not decoded or transcoded. Image download failures are logged without blocking event updates. Deferred/new images stay null; existing R2 objects remain usable after failed refreshes. Missing objects take priority over refreshes and duplicate source URLs share downloads. Source-hosted URLs are never persisted. Existing uploaded objects remain after subsequent failures; cleanup of unreferenced images and retries are pending.
 
 ### Detail fields and frontend integration
 
