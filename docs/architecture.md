@@ -30,7 +30,7 @@ The Hono Worker will own source collection. It should fetch supported public pag
 
 ### D1
 
-D1 is the structured store for event details and source provenance. The initial schema is proposed in [data-model.md](data-model.md); no event migration or binding exists in the current repo.
+D1 is the structured store for event details and source provenance. The shared model and Drizzle table are documented in [data-model.md](data-model.md). An initial migration and query helpers exist in `packages/db`; real D1 bindings and migration application are pending.
 
 ### R2
 
@@ -46,7 +46,7 @@ The frontend renders the event discovery experience. Its server-side code will q
 - `apps/web`: a minimal Next.js app showing a heading and description.
 - Root Cloudflare configuration targets the Vinext application and a response-store worker. It does not configure the planned event scraper, D1, or R2.
 
-The collector validates the minimal source shape and deduplicates by ID. The actual Cron Trigger, full event normalization, persistent upserts, D1 writes, and frontend event queries remain pending.
+The collector validates the minimal source shape and deduplicates by ID. Shared normalized events, a Devpost normalizer, and D1 read/upsert helpers are implemented. The handler requires `env.DB`; real bindings, migration application, Cron Trigger/deployment, and frontend integration remain pending.
 
 ## Planned data lifecycle
 

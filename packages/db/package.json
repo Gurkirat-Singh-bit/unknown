@@ -1,0 +1,28 @@
+{
+  "name": "@repo/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./client": "./src/client.ts",
+    "./schema": "./src/schema.ts",
+    "./queries/events": "./src/queries/events.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "check-types": "tsc --noEmit && tsc -p tsconfig.tests.json",
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "@repo/core": "*",
+    "drizzle-orm": "^0.45.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.0.0",
+    "@repo/typescript-config": "*",
+    "drizzle-kit": "^0.31.11",
+    "miniflare": "^4.20260730.0",
+    "@types/bun": "latest",
+    "typescript": "7.0.2"
+  }
+}

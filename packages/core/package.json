@@ -1,7 +1,9 @@
 {
   "name": "@repo/core",
   "exports": {
-    "./schemas/devpost": "./src/schemas/devpost.ts"
+    "./schemas/devpost": "./src/schemas/devpost.ts",
+    "./schemas/event": "./src/schemas/event.ts",
+    "./schemas/event-filters": "./src/schemas/event-filters.ts"
   },
   "scripts": {
     "check-types": "tsc --noEmit"

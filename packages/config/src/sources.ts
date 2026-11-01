@@ -1,7 +1,7 @@
 export const sources = {
   devpost: {
     url: 'https://devpost.com/api/hackathons',
-    status: 'open',
+    statuses: ['open', 'upcoming'],
     requestTimeoutMs: 30_000,
     maxPages: 50,
     pageDelayMs: 500,

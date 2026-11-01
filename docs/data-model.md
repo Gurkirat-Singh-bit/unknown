@@ -1,49 +1,46 @@
-# Initial D1 Event Data Model
+# Shared event model and Drizzle D1 schema
 
-This proposal translates the database canvas sketch into an initial relational record. It is not yet implemented as a migration.
+The product event contract is `packages/core/src/schemas/event.ts`; the matching Drizzle table is `packages/db/src/schema.ts`. Zod handles runtime validation and defaults. Drizzle provides typed SQL, inferred row/insert types, and migration generation. There is no separate handwritten event interface.
 
-| Column | Type | Purpose |
-|---|---|---|
-| `id` | `TEXT PRIMARY KEY` | Stable internal event record ID. |
-| `title` | `TEXT NOT NULL` | Event name. |
-| `type` | `TEXT` | Event category, such as hackathon or meetup. |
-| `location` | `TEXT` | Venue, city, or online location. |
-| `starts_at` | `TEXT` | Actual event start in ISO 8601 form, including timezone when known. |
-| `ends_at` | `TEXT` | Actual event end in ISO 8601 form, when available. |
-| `description` | `TEXT` | Event details from the source. |
-| `image_url` | `TEXT` | Source image URL or URL of an image stored in R2. |
-| `platform` | `TEXT NOT NULL` | Source platform, e.g. `devpost`. |
-| `source_url` | `TEXT NOT NULL` | Canonical event listing URL. |
-| `scraped_at` | `TEXT NOT NULL` | Last successful scrape time in ISO 8601 form. |
-| `created_at` | `TEXT NOT NULL` | Row creation time. |
-| `updated_at` | `TEXT NOT NULL` | Last time normalized event data changed. |
+| Fields | Meaning |
+|---|---|
+| `source`, `sourceId`, `sourceUrl` | Source slug, stable external ID, and original listing URL. |
+| `title`, `type` | Event name and kind: hackathon, meetup, conference, or other. |
+| `mode` | Online, in-person (`in_person`), hybrid, or unknown. |
+| `status` | Open, upcoming, ended, or unknown. |
+| `description`, `location`, `city`, `country` | Nullable event text and structured location. |
+| `startsAt`, `endsAt` | Nullable actual event timestamps. Known timestamps normalize to UTC ISO 8601; end cannot precede start. |
+| `submissionPeriod` | Source-provided submission-period text, separate from actual event dates. |
+| `organizer`, `imageUrl`, `prizeText` | Nullable listing details. |
+| `tags` | String array; stored as JSON text in SQLite. |
+| `scrapedAt` | Required successful collection timestamp. |
+| `id`, `createdAt`, `updatedAt` | Added by persistence: deterministic source identity, first insertion time, and latest accepted ingestion time. |
 
-```sql
-CREATE TABLE events (
-  id TEXT PRIMARY KEY,
-  title TEXT NOT NULL,
-  type TEXT,
-  location TEXT,
-  starts_at TEXT,
-  ends_at TEXT,
-  description TEXT,
-  image_url TEXT,
-  platform TEXT NOT NULL,
-  source_url TEXT NOT NULL,
-  scraped_at TEXT NOT NULL,
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL,
-  UNIQUE (platform, source_url)
-);
+The unique key is `(source, sourceId)`, so different platforms can use the same external ID. Internal IDs use `source:sourceId`. Cross-source event merging is not implemented.
 
-CREATE INDEX events_starts_at_idx ON events (starts_at);
-CREATE INDEX events_type_idx ON events (type);
+## Shared imports
+
+```ts
+import { eventSchema, type Event, type EventRecord } from '@repo/core/schemas/event'
+import { eventFiltersSchema, type EventFilters } from '@repo/core/schemas/event-filters'
 ```
 
-## Notes
+Browser code can use these contracts after declaring the core workspace dependency. Server code can use the separate `@repo/db` package; the frontend app has not been changed.
 
-- `scraped_at` captures when data was collected; `starts_at` and `ends_at` describe the real event time.
-- The canvas calls the event name `Name`; this model uses `title`.
-- The `(platform, source_url)` uniqueness constraint supports idempotent repeated scrapes.
-- Structured city/country, online status, tags, organizer, and prizes can be added once the first source parser confirms what it can reliably provide.
-- Cross-platform event merging is separate from source-level deduplication.
+## Devpost normalization
+
+The source contract remains `@repo/core/schemas/devpost`. Its normalizer is `apps/scraper/src/normalizers/devpost.ts`.
+
+- Devpost's numeric ID becomes `sourceId`; event type is `hackathon`.
+- Titles, source URLs, organizer, theme tags, images, and display location are mapped to the common contract.
+- Protocol-relative image URLs become absolute HTTPS URLs.
+- An explicit `Online` location maps to online mode. Other ambiguous locations remain unknown rather than inventing a city, country, or attendance mode.
+- Prize markup is stripped into text. Do not render source text as trusted HTML.
+- Formatted submission periods are retained as text. Actual event start/end dates and full descriptions stay null until a reliable detail source is added.
+- One scrape timestamp is captured at run start so a slower older run cannot overwrite a newer observation in an upsert.
+
+## Database access
+
+`@repo/db/client` accepts a D1 binding and creates Drizzle. `@repo/db/queries/events` exports `listEvents()` and `upsertEvents()`. Both validate their input with shared Zod schemas. The migration is generated in `packages/db/migrations`; it has not been applied to a production D1 database.
+
+Read filtering, upsert batch semantics, and migration setup are documented in `packages/db/README.md`. Stale rows that disappeared from a source or have unknown dates require a separate freshness/expiry policy; current reads only hide ended status and known expired event dates.

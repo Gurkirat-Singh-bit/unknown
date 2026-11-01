@@ -3,13 +3,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check-types": "tsc --noEmit"
+    "test": "bun test",
+    "check-types": "tsc --noEmit && tsc -p tsconfig.tests.json"
   },
   "dependencies": {
     "@repo/config": "*",
-    "@repo/core": "*"
+    "@repo/core": "*",
+    "@repo/db": "*"
   },
   "devDependencies": {
+    "@types/bun": "latest",
     "@cloudflare/workers-types": "^4.0.0",
     "typescript": "7.0.2"
   }

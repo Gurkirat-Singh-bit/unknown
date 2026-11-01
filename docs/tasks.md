@@ -2,7 +2,7 @@
 
 Goal: collect Devpost hackathons on a schedule, store them in D1, and let the web app read them server-side.
 
-This is the work plan; unchecked items have not been implemented. Initial scope is Devpost only. Browser Run and R2 are deferred until needed. Drizzle and Zod are recommendations to settle before adding dependencies.
+This is the work plan; unchecked items have not been implemented. Initial scope is Devpost only. Browser Run and R2 are deferred until needed. Drizzle and Zod are adopted in shared database and core packages. Frontend integration remains a separate task; no frontend application files were modified.
 
 ## 1. Rename and simplify the scraper — Codex
 
@@ -23,32 +23,32 @@ Done when: the app is named `scraper` and the collection function can run withou
 - [x] Define which listings to collect: open/upcoming, with completed events excluded from active results.
 - [x] Handle missing data, non-success responses, pagination termination, and unexpected response shapes.
 
-Done when: collection retrieves multiple pages, preserves stable source identity, and distinguishes a failed scrape from an empty successful result. The JSON collector retrieves open listings only. A live local run collected 44 unique open records. It rejects malformed or incomplete responses, deduplicates by source ID, and caps page requests. Cloudflare runtime access is still unverified.
+Done when: collection retrieves multiple pages, preserves stable source identity, and distinguishes a failed scrape from an empty successful result. The JSON collector retrieves open and upcoming listings. The latest live local run collected 166 unique records: 44 open and 122 upcoming. It rejects malformed or incomplete responses, deduplicates by source ID, and caps page requests. Cloudflare runtime access is still unverified.
 
 ## 3. Agree on the shared event contract — You + Codex
 
 - [ ] You: confirm the fields your frontend friend needs for cards and filters.
-- [ ] Together: choose Drizzle or plain D1 SQL. Recommendation: Drizzle for shared table definitions, inferred types, and migration generation.
-- [ ] Codex: finalize the draft in `data-model.md`, including source identity, event dates, online status, tags, location, and scrape timestamps.
+- [x] Adopt Drizzle for shared table definitions, inferred types, and migration generation.
+- [x] Codex: implement and document the shared initial event model, including source identity, event dates, mode, tags, location, and scrape timestamps. Frontend owner review remains pending.
 - [x] Codex: share minimal Devpost event/page Zod schemas and inferred types in `@repo/core/schemas/devpost`.
-- [ ] Codex: define the normalized event contract and validate remaining fields needed by the database/frontend.
-- [ ] Codex: preserve source date meaning and timezone; do not assume a submission deadline is the event start time.
+- [x] Codex: define the normalized event/record contract and read-filter validators in `@repo/core`. Richer source details remain pending.
+- [x] Codex: preserve submission-period text separately and normalize known actual event timestamps to UTC.
 
 Done when: both apps have one agreed event shape and scraped records can be validated before insertion.
 
 ## 4. Create D1 and shared database code — You + Codex
 
 - [ ] You: provide the Cloudflare account access/context needed for database creation and deployment.
-- [ ] Codex: create `packages/db` with the schema, initial migration, and database/query helpers using the chosen approach.
+- [x] Codex: create `packages/db` with the Drizzle schema, generated initial migration, D1 factory, and validated read/upsert helpers.
 - [ ] Codex: configure scraper and web bindings to the same production D1 database, with isolated local development data.
-- [ ] Codex: establish one migration command and owner so both apps do not independently manage schema changes.
+- [x] Codex: make `@repo/db` the migration owner; expose `db:generate` and document application through the future Worker configuration.
 
 Done when: both server runtimes can access the agreed schema and share its types/query helpers.
 
 ## 5. Persist Devpost records safely — Codex
 
-- [ ] Normalize and validate each listing, then upsert by stable source identity.
-- [ ] Repeated runs update existing listings without inserting duplicates.
+- [x] Normalize and validate each listing, then upsert by stable source identity through the scheduled handler. Requires real binding/migration setup before deployment.
+- [x] Implement idempotent source-key upserts, preserve creation time, and reject older observations from overwriting newer ones.
 - [ ] Record successful scrape times and report fetched, inserted/updated, rejected, and failed counts.
 - [ ] Respect rate limits and `Retry-After`, cap retries, and stop on challenge pages.
 - [ ] Preserve existing data after failures; an incomplete or blocked scrape must not delete listings.
@@ -68,7 +68,7 @@ Done when: the deployed scheduled job writes Devpost data to D1.
 ## 7. Connect the frontend — Frontend owner + Codex
 
 - [ ] Settle the frontend development/deployment path: the repo currently mixes standard Next.js scripts with root Vinext configuration.
-- [ ] Add a shared `listEvents()` query with bounded pagination, supported filters, and upcoming-event rules.
+- [x] Add a shared `listEvents()` query with bounded pagination, filters, and active-event defaults. Frontend integration remains pending.
 - [ ] Read D1 directly from web server code and pass records to the UI.
 - [ ] Add a Next.js `/api/events` Route Handler only if browser-driven JSON fetching is needed; reuse `listEvents()` there.
 - [ ] Define caching/freshness behavior so successful scrape updates become visible.

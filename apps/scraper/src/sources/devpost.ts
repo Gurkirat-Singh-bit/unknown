@@ -11,7 +11,9 @@ export async function scrapeDevpost(): Promise<DevpostEvent[]> {
     }
 
     const url = new URL(config.url)
-    url.searchParams.set('status[]', config.status)
+    for (const status of config.statuses) {
+      url.searchParams.append('status[]', status)
+    }
     url.searchParams.set('page', String(page))
 
     const response = await fetch(url, {
@@ -35,7 +37,7 @@ export async function scrapeDevpost(): Promise<DevpostEvent[]> {
     }
 
     const { hackathons, meta } = result.data
-    if (hackathons.some((event) => event.open_state !== config.status)) {
+    if (hackathons.some((event) => !config.statuses.some((status) => status === event.open_state))) {
       throw new Error(`Devpost page ${page} returned records outside the requested status`)
     }
     const previousCount = events.size
@@ -48,8 +50,12 @@ export async function scrapeDevpost(): Promise<DevpostEvent[]> {
       return []
     }
 
-    if (events.size >= meta.total_count && meta.total_count > 0) {
+    if (events.size === meta.total_count && meta.total_count > 0) {
       return [...events.values()]
+    }
+
+    if (events.size > meta.total_count) {
+      throw new Error(`Devpost result count changed during collection on page ${page}`)
     }
 
     if (events.size === previousCount || hackathons.length < meta.per_page) {

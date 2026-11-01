@@ -48,4 +48,4 @@ The initial record should cover a stable ID, title/name, event type, location, a
 
 ## Current status
 
-This document describes the intended product. The scraper now collects open Devpost listings through paginated JSON requests and validates a minimal shared source schema. It does not yet normalize the full event model or store listings in D1. See [architecture.md](architecture.md) and [implementation-status.md](implementation-status.md).
+This document describes the intended product. The scraper now collects open and upcoming Devpost listings through paginated JSON requests and validates a minimal shared source schema. It normalizes to a shared event model and calls Drizzle upserts from its scheduled handler. Actual D1 configuration, migration application, and deployment remain pending. See [architecture.md](architecture.md) and [implementation-status.md](implementation-status.md).
