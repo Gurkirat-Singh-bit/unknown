@@ -38,7 +38,6 @@
   "dependencies": {
     "@cloudflare/workers-response-store": "^1.0.1",
     "@vinext/cloudflare": "^1.0.1",
-    "cheerio": "^1.2.0",
     "vinext": "^1.0.1"
   },
   "type": "module"

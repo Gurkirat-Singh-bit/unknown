@@ -1,179 +1,67 @@
-# Project Architecture
+# Unknown — Architecture
 
-This project is built to do one main job:
-
-- scrape developer events from public sources
-- store them in Cloudflare D1
-- show the data in the Next.js frontend through simple API routes
-
-The system is intentionally simple:
-
-- the scraper runs on a schedule
-- it writes data once
-- the frontend only reads data
-
----
-
-## High-level flow
+## Intended flow
 
 ```text
-┌─────────────────────────────────────────────────────────────────────┐
-│                         Developer Event Pipeline                     │
-└─────────────────────────────────────────────────────────────────────┘
-
-                      ┌──────────────────────┐
-                      │   CRON / Scheduler   │
-                      │   runs every 12h     │
-                      └──────────┬───────────┘
-                                 │
-                                 ▼
-                      ┌──────────────────────┐
-                      │   Hono Worker        │
-                      │   apps/api           │
-                      │   scraping job       │
-                      └──────────┬───────────┘
-                                 │
-         ┌───────────────────────┼───────────────────────────────┐
-         │                       │                               │
-         ▼                       ▼                               ▼
-┌──────────────────┐   ┌──────────────────────┐   ┌──────────────────────┐
-│ Public sources   │   │ Normalizer           │   │ Dedupe / clean data  │
-│ - Devpost        │   │ converts all events  │   │ remove duplicates    │
-│ - Meetup         │   │ to one format        │   │ unify titles/urls    │
-│ - Eventbrite     │   │                      │   │                      │
-│ - public event   │   │                      │   │                      │
-│   pages          │   │                      │   │                      │
-└─────────┬────────┘   └──────────┬───────────┘   └──────────┬───────────┘
-          │                       │                               │
-          └───────────────────────┴───────────────────────────────┘
-                                 │
-                                 ▼
-                      ┌──────────────────────┐
-                      │   Cloudflare D1      │
-                      │   stores events      │
-                      │   id, title, date,   │
-                      │   city, url, tags    │
-                      └──────────┬───────────┘
-                                 │
-                                 ▼
-                      ┌──────────────────────┐
-                      │   Next.js app        │
-                      │   apps/web           │
-                      │   /api/events        │
-                      │   queries D1         │
-                      └──────────┬───────────┘
-                                 │
-                                 ▼
-                      ┌──────────────────────┐
-                      │   Frontend UI        │
-                      │   shows cards/list   │
-                      │   filters/search     │
-                      │   upcoming events     │
-                      └──────────────────────┘
+Public event listings (initially Devpost)
+                  │
+                  ▼
+Scheduled Hono Cloudflare Worker (every 6 hours)
+   fetch → parse → normalize → deduplicate/upsert
+                  │
+                  ├────► Cloudflare R2 (optional image storage)
+                  ▼
+             Cloudflare D1
+                  │
+                  ▼
+        Next.js server-side D1 reads
+                  │
+                  ▼
+          Event listing interface
 ```
 
----
+The six-hour cadence and read path reflect the latest project notes. A previous draft described a 12-hour schedule and a separate `/api/events` read API; those are not the current direction. Next.js should query D1 server-side, while the scraper Worker writes records to D1.
 
-## Simple explanation
+## Components
 
-### 1) Scraper worker
-The Cloudflare/Hono backend is responsible for scraping event data from public event sources.
+### Scraper Worker
 
-It does:
+The Hono Worker will own source collection. It should fetch supported public pages, parse and normalize event records, upsert them into D1, and record successful scrape times. A Cloudflare scheduled trigger is planned; it is not configured yet. Source failures, retries, and rate limits still need implementation decisions.
 
-- visit public pages
-- collect developer events
-- extract titles, dates, locations, links, tags
-- clean the data
-- remove duplicates
-- store into D1
+### D1
 
-This happens automatically every 12 hours.
+D1 is the structured store for event details and source provenance. The initial schema is proposed in [data-model.md](data-model.md); no event migration or binding exists in the current repo.
 
-### 2) D1 database
-D1 is the main storage for all event data.
+### R2
 
-It saves things like:
+R2 is planned for event images or other large assets. Decide whether to copy images into R2 or keep source-hosted URLs. The schema should retain an image URL either way.
 
-- event id
-- source name
-- title
-- description
-- date
-- city
-- country
-- online or in-person
-- URL
-- tags
+### Next.js
 
-This means the scraper does the heavy work once, and the app reads from a clean database later.
+The frontend renders the event discovery experience. Its server-side code will query D1 directly and provide event data to the UI. The browser does not scrape source sites or receive database credentials. The current page is a placeholder.
 
-### 3) Next.js API
-The Next app has simple API routes like:
+## Repository layout today
 
-- /api/events
-- /api/events?city=London
-- /api/events?tag=hackathon
+- `apps/scraper`: a plain scheduled Worker handler calling a paginated Devpost JSON collector. Shared config supplies source settings; shared core supplies minimal Zod source schemas. No HTTP routes or browser are needed for listing collection.
+- `apps/web`: a minimal Next.js app showing a heading and description.
+- Root Cloudflare configuration targets the Vinext application and a response-store worker. It does not configure the planned event scraper, D1, or R2.
 
-These routes query D1 and return JSON to the frontend.
+The collector validates the minimal source shape and deduplicates by ID. The actual Cron Trigger, full event normalization, persistent upserts, D1 writes, and frontend event queries remain pending.
 
-### 4) Frontend
-The frontend is only for display.
+## Planned data lifecycle
 
-It does not scrape anything.
-It does not directly manage the database.
-It just asks the API for event data and renders it.
+1. Scheduled trigger starts a scrape run.
+2. Source-specific parser fetches listings and extracts available details.
+3. The normalizer maps each listing into the common shape in [data-model.md](data-model.md).
+4. The worker validates records and upserts on `(platform, source_url)`.
+5. Next.js queries D1 server-side and renders active events.
+6. Expiry rules hide or remove events whose dates have passed.
 
----
+## Decisions still needed
 
-## Tech stack
-
-```text
-Frontend:
-  Next.js
-  React
-  Tailwind / UI components
-
-Backend:
-  Hono
-  Cloudflare Worker
-
-Data storage:
-  Cloudflare D1
-
-Scheduling:
-  Cloudflare cron jobs
-
-Scraping sources:
-  Devpost
-  Meetup
-  Eventbrite
-  public event pages / community pages
-```
-
----
-
-## In one sentence
-
-The worker scrapes public event sources, stores the cleaned results in D1, and the Next app reads from D1 through its own API so the frontend stays simple and fast.
-
----
-
-## Project split
-
-```text
-apps/
-├── api/
-│   └── Hono worker
-│       - scraping job
-│       - cron runner
-│       - writes to D1
-│
-├── web/
-│   └── Next.js frontend
-│       - calls /api
-│       - shows event cards
-│       - filters and search
-```
-
-This is the basic architecture for the project.
+- Configure and manually invoke the six-hour scheduled run.
+- Choose scrape logging, retry, and source rate-limit behavior.
+- Define how missing fields and changed event details are handled.
+- Set event expiry policy.
+- Decide image copying and retention in R2.
+- Decide whether cross-platform duplicates should be merged; source URL uniqueness alone only prevents duplicate records from the same source listing.
