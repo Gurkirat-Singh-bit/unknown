@@ -3,9 +3,13 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    "./*": "./src/*.tsx"
+    ".": "./src/index.ts",
+    "./*": "./src/*.tsx",
+    "./styles.css": "./src/hackradar.css"
   },
   "scripts": {
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
     "lint": "eslint . --max-warnings 0",
     "generate:component": "turbo gen react-component",
     "check-types": "tsc --noEmit"
@@ -13,13 +17,16 @@
   "devDependencies": {
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*",
+    "@storybook/nextjs-vite": "^10.6.5",
     "@types/node": "26.4.1",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.5",
     "eslint": "10.9.1",
+    "storybook": "^10.6.5",
     "typescript": "7.0.2"
   },
   "dependencies": {
+    "lucide-react": "^1.66.0",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   }

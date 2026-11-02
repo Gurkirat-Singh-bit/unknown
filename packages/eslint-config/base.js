@@ -1,4 +1,5 @@
 import babelParser from "@babel/eslint-parser";
+import { createRequire } from "node:module";
 import js from "@eslint/js";
 import eslintConfigPrettier from "eslint-config-prettier";
 import turboPlugin from "eslint-plugin-turbo";
@@ -18,7 +19,7 @@ export const config = [
       parserOptions: {
         requireConfigFile: false,
         babelOptions: {
-          presets: ["@babel/preset-typescript"],
+          presets: [createRequire(import.meta.url).resolve("@babel/preset-typescript")],
         },
       },
     },
