@@ -1,4 +1,4 @@
-import "../src/hackradar.css";
+import "../../../apps/web/app/globals.css";
 
 const preview = {
   parameters: {

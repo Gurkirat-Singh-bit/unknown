@@ -3,18 +3,47 @@
 @source "./**/*.{ts,tsx}";
 
 @theme {
+  --container-site: 87.25rem;
   --font-sans: "DM Sans", Arial, sans-serif;
   --font-display: "Manrope", "DM Sans", sans-serif;
-  --color-radar-purple: #7618f5;
-  --color-radar-ink: #11182b;
-  --color-radar-muted: #63728e;
-  --color-radar-line: #e5ebf5;
+  --color-primary: #2563eb;
+  --color-primary-strong: #1d4ed8;
+  --color-on-primary: #ffffff;
+  --color-brand-soft: #eff6ff;
+  --color-accent: #38bdf8;
+  --color-accent-soft: #e0f2fe;
+  --color-contrast: #0f172a;
+  --color-surface: #ffffff;
+  --color-canvas: #f8fafc;
+  --color-ink: #0f172a;
+  --color-muted: #64748b;
+  --color-line: #e2e8f0;
+  --color-radar-ink: var(--color-ink);
+  --color-radar-muted: var(--color-muted);
+  --color-radar-line: var(--color-line);
 }
 
 @layer base {
-  html { scroll-behavior: smooth; }
-  body { max-width: 100vw; overflow-x: hidden; color: var(--color-radar-ink); background: white; font-family: var(--font-sans); font-size: 14px; }
-  button, input { font: inherit; }
-  button { cursor: pointer; }
-  a { color: inherit; text-decoration: none; }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    max-width: 100vw;
+    overflow-x: hidden;
+    color: var(--color-radar-ink);
+    background: var(--color-canvas);
+    font-family: var(--font-sans);
+    font-size: 14px;
+  }
+  button,
+  input {
+    font: inherit;
+  }
+  button {
+    cursor: pointer;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 }

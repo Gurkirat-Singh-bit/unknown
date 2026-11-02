@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { SiteFooter } from "./hackradar";
+import { StatsRow } from "./stats-row";
 
-const meta = { title: "HackRadar/Site Footer", component: SiteFooter } satisfies Meta<typeof SiteFooter>;
+const meta = {
+  title: "HackRadar/Stats Row",
+  component: StatsRow,
+} satisfies Meta<typeof StatsRow>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};

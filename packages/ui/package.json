@@ -4,8 +4,13 @@
   "private": true,
   "exports": {
     ".": "./src/index.ts",
-    "./*": "./src/*.tsx",
-    "./styles.css": "./src/hackradar.css"
+    "./components/*": "./src/components/*.tsx",
+    "./types": "./src/types/event.ts",
+    "./styles.css": "./src/hackradar.css",
+    "./hackradar": "./src/index.ts",
+    "./button": "./src/components/primitives/button.tsx",
+    "./card": "./src/components/primitives/card.tsx",
+    "./code": "./src/components/primitives/code.tsx"
   },
   "scripts": {
     "storybook": "storybook dev -p 6006",

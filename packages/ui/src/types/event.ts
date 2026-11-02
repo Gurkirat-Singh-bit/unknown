@@ -1,0 +1,19 @@
+export type EventMode = "All" | "Online" | "In-person" | "Hybrid";
+export type Hackathon = {
+  title: string;
+  tagline: string;
+  desc: string;
+  date: string;
+  place: string;
+  prize: string;
+  mode: Exclude<EventMode, "All">;
+  theme: string;
+  href?: string;
+  category?: string;
+  organizer?: string;
+  registrationStatus?: "open" | "closed" | "upcoming";
+  registrationDeadline?: string;
+  featured?: boolean;
+  participants?: number;
+  teamSize?: string;
+};
