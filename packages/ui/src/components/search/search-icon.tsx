@@ -1,17 +1,11 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { MagnifyingGlassIcon as Search } from "@phosphor-icons/react/dist/csr/MagnifyingGlass";
 
 export function SearchIcon({
   className = "size-full",
 }: {
   className?: string;
 }) {
-  return (
-    <Search
-      aria-hidden="true"
-      className={`${className} stroke-muted`}
-      strokeWidth={1.8}
-    />
-  );
+  return <Search aria-hidden="true" className={className} weight="regular" />;
 }

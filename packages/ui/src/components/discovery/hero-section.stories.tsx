@@ -1,7 +1,5 @@
-import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { HeroSection } from "./hero-section";
-import { type EventMode } from "../../types/event";
 
 const meta = {
   title: "HackRadar/Hero Section",
@@ -11,15 +9,5 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {
-  args: { mode: "All", onModeChange: () => {}, onSearch: () => {} },
-  render: () => {
-    const [mode, setMode] = useState<EventMode>("All");
-    return (
-      <HeroSection
-        mode={mode}
-        onModeChange={setMode}
-        onSearch={(value) => console.info("Search:", value)}
-      />
-    );
-  },
+  args: { onSearch: (value: string) => console.info("Search:", value) },
 };

@@ -1,68 +1,49 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
 import { SearchBar } from "../search/search-bar";
-import { EventFilters } from "../events/event-filters";
 import { StatsRow } from "./stats-row";
-import GradientText from "../react-bits/gradient-text";
-import type { EventMode } from "../../types/event";
 import type { SearchHandler } from "../search/search-bar";
 
 export function HeroSection({
-  mode,
-  onModeChange,
   onSearch,
   resultCount,
   submittedQuery,
   loading,
 }: {
-  mode: EventMode;
-  onModeChange: (mode: EventMode) => void;
   onSearch: SearchHandler;
   resultCount?: number;
   submittedQuery?: string;
   loading?: boolean;
 }) {
   return (
-    <section
-      className="relative overflow-visible bg-surface pb-8 sm:pb-12"
-      id="top"
-    >
+    <section id="top" className="relative isolate overflow-hidden bg-surface">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-linear-to-br from-lime-soft via-white/50 to-cyan-soft"
+        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_0%_100%,var(--color-cyan-soft),transparent_50%),radial-gradient(ellipse_at_100%_100%,var(--color-lime-soft),transparent_50%)]"
       />
-      <div className="relative mx-auto w-full max-w-site px-4 pt-7 text-center sm:px-6 lg:px-8 lg:pt-9">
-        <div className="mx-auto mb-4 flex w-fit max-w-full flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-2xl bg-surface/95 px-3 py-1.5 text-[10px] text-ink shadow-md shadow-contrast/5">
-          <span className="grid size-[18px] place-items-center rounded-full bg-primary text-on-primary">
-            <Sparkles size={11} />
-          </span>
-          <b>1,248+ Events</b>
-          <i className="size-[3px] rounded-full bg-primary" />
-          <b>500K+ Developers</b>
-          <i className="size-[3px] rounded-full bg-primary" />
-          <strong className="text-primary-strong">50+ Countries</strong>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(var(--color-line)_0.75px,transparent_0.75px)] opacity-40 [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_75%)]"
+      />
+      <div className="relative mx-auto flex min-h-[calc(100dvh-var(--spacing-header))] w-full max-w-site flex-col px-4 pb-12 text-center sm:px-6 sm:pb-16 lg:px-8 lg:pb-20">
+        <div className="flex flex-col pt-12 sm:pt-16 lg:pt-20">
+          <h1 className="mx-auto max-w-6xl font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-ink sm:text-5xl lg:text-6xl xl:text-7xl">
+            Discover Your Next
+            <br />
+            <span className="text-ink">Hackathon</span> &amp; Developer Event
+          </h1>
+          <p className="mx-auto mt-6 mb-8 max-w-2xl text-sm leading-6 text-muted sm:text-base sm:leading-7">
+            Find hackathons, coding competitions, workshops, and developer
+            communities. Choose an event and start building.
+          </p>
+          <SearchBar
+            onSearch={onSearch}
+            resultCount={resultCount}
+            submittedQuery={submittedQuery}
+            loading={loading}
+          />
+          <StatsRow />
         </div>
-        <h1 className="mx-auto max-w-4xl font-display text-3xl leading-tight sm:leading-[1.1] font-extrabold tracking-[-1.3px] text-ink sm:text-4xl lg:text-[47px] lg:tracking-[-1.8px]">
-          Discover Your Next
-          <br />
-          <GradientText animationSpeed={8} colors={["var(--color-primary-strong)", "var(--color-cyan-ink)", "var(--color-primary-strong)"]} pauseOnHover>
-            Hackathon
-          </GradientText>{" "}
-          &amp; Developer Event
-        </h1>
-        <p className="mx-auto my-4 max-w-2xl text-[13px] leading-[21px] text-muted lg:mb-[15px] lg:text-sm">
-          Find hackathons, coding competitions, workshops, meetups and developer
-          <br className="hidden lg:block" /> communities — all in one place.
-        </p>
-        <SearchBar
-          onSearch={onSearch}
-          resultCount={resultCount}
-          submittedQuery={submittedQuery}
-          loading={loading}
-        />
-        <EventFilters mode={mode} onChange={onModeChange} />
-        <StatsRow />
       </div>
     </section>
   );

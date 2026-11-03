@@ -1,8 +1,25 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 @source "./**/*.{ts,tsx}";
 
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 100 1000;
+  font-display: swap;
+  src: url("./fonts/DM-Sans-variable.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Manrope";
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("./fonts/Manrope-variable.ttf") format("truetype");
+}
+
 @theme {
+  --spacing-header: 4.25rem;
+  --color-scroll-track: #f0f2eb;
   --container-site: 87.25rem;
   --font-sans: "DM Sans", Arial, sans-serif;
   --font-display: "Manrope", "DM Sans", sans-serif;
@@ -11,6 +28,10 @@
   --color-cyan-soft: #b3f8ff;
   --color-yellow: #e6ff00;
   --color-on-cyan: #00343d;
+  --color-footer: #0c0d0c;
+  --color-footer-outline: #b8bcb9;
+  --color-black: #111111;
+  --color-headline-lime: #65a30d;
   --color-primary: #e6ff00;
   --color-primary-strong: #006b80;
   --color-on-primary: #202600;
@@ -23,8 +44,8 @@
   --color-contrast: #10222b;
   --color-surface: #ffffff;
   --color-canvas: #ffffff;
-  --color-ink: #10222b;
-  --color-muted: #526d78;
+  --color-ink: #111111;
+  --color-muted: #626766;
   --color-line: #daebee;
   --color-poster-night: #061c24;
   --color-poster-mid: #006b80;
@@ -36,6 +57,8 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-lime) var(--color-scroll-track);
   }
   body {
     max-width: 100vw;
@@ -55,5 +78,23 @@
   a {
     color: inherit;
     text-decoration: none;
+  }
+}
+
+@layer base {
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-scroll-track);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-lime);
+    border: 2px solid var(--color-scroll-track);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-lime-ink);
   }
 }

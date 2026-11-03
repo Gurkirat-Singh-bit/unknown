@@ -31,7 +31,8 @@
     "typescript": "7.0.2"
   },
   "dependencies": {
-    "lucide-react": "^1.66.0",
+    "@phosphor-icons/react": "^2.1.10",
+    "@radix-ui/react-select": "^2.4.1",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   }

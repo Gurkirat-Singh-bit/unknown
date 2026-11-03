@@ -1,18 +1,13 @@
 "use client";
 
 import { type ReactNode } from "react";
-import {
-  CalendarDays,
-  CheckCircle2,
-  Code2,
-  Globe2,
-  MapPin,
-  Monitor,
-  Sparkles,
-  Trophy,
-  Users,
-} from "lucide-react";
-import type { EventMode, Hackathon } from "../../types/event";
+import { CalendarDotsIcon as CalendarDays } from "@phosphor-icons/react/dist/csr/CalendarDots";
+import { CheckCircleIcon as CheckCircle2 } from "@phosphor-icons/react/dist/csr/CheckCircle";
+import { CodeIcon as Code2 } from "@phosphor-icons/react/dist/csr/Code";
+import { MapPinIcon as MapPin } from "@phosphor-icons/react/dist/csr/MapPin";
+import { TrophyIcon as Trophy } from "@phosphor-icons/react/dist/csr/Trophy";
+import { UsersThreeIcon as Users } from "@phosphor-icons/react/dist/csr/UsersThree";
+import type { Hackathon } from "../../types/event";
 
 const coverStyle: Record<string, string> = {
   summit:
@@ -22,12 +17,6 @@ const coverStyle: Record<string, string> = {
     "bg-linear-to-br from-brand-soft via-white to-accent-soft before:bg-[repeating-linear-gradient(130deg,transparent_0_30px,#b9ed3214_32px_48px)]",
   bangalore: "bg-linear-to-b from-contrast via-poster-mid to-lime",
   web3: "bg-linear-to-br from-yellow via-lime-soft to-cyan before:bg-[radial-gradient(circle_at_85%_75%,var(--color-primary-strong)_0_12%,transparent_13%),radial-gradient(circle_at_70%_20%,#ffffff99_0_6%,transparent_7%),repeating-linear-gradient(130deg,transparent_0_29px,#ffffff40_30px_42px)]",
-};
-
-const modeBadgeStyles: Record<Exclude<EventMode, "All">, string> = {
-  Online: "bg-cyan text-on-cyan",
-  "In-person": "bg-primary text-on-primary",
-  Hybrid: "bg-cyan text-on-cyan",
 };
 
 export function EventCard({
@@ -65,27 +54,8 @@ export function EventCard({
         <div className="absolute inset-0">
           <PosterArtwork theme={event.theme} />
         </div>
-        <div className="absolute inset-x-0 top-0 z-[2] flex items-center justify-between gap-2 p-4 sm:p-5">
-          <span
-            className={`max-w-[65%] truncate rounded-full px-2.5 py-1 text-[9px] font-bold tracking-[0.12em] ${event.theme === "opensource" ? "bg-brand-soft/90 text-ink" : event.theme === "web3" ? "bg-ink/10 text-ink" : "border border-white/25 bg-ink/15 text-white backdrop-blur-sm"}`}
-          >
-            {event.organizer ?? event.category ?? "HACKATHON"}
-          </span>
-          <span
-            className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[10px] font-semibold shadow-sm ${modeBadgeStyles[event.mode]}`}
-          >
-            {event.mode === "In-person" ? (
-              <MapPin size={14} strokeWidth={2} />
-            ) : event.mode === "Hybrid" ? (
-              <Globe2 size={14} strokeWidth={2} />
-            ) : (
-              <Monitor size={14} strokeWidth={2} />
-            )}{" "}
-            {event.mode}
-          </span>
-        </div>
         <div
-          className={`absolute inset-x-4 top-[48px] z-[2] max-w-[78%] font-display text-[22px] leading-[1.05] font-extrabold tracking-[-0.6px] sm:inset-x-5 sm:top-[52px] sm:text-[25px] ${event.theme === "opensource" ? "max-w-[70%] text-ink" : event.theme === "web3" ? "max-w-[72%] text-ink" : "text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]"}`}
+          className={`absolute inset-x-4 top-5 z-[2] max-w-[78%] font-display text-[22px] leading-[1.05] font-extrabold tracking-[-0.6px] sm:inset-x-5 sm:top-6 sm:text-[25px] ${event.theme === "opensource" ? "max-w-[70%] text-ink" : event.theme === "web3" ? "max-w-[72%] text-ink" : "text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]"}`}
         >
           {event.title}
         </div>
@@ -103,7 +73,7 @@ export function EventCard({
             )}
             {event.featured && (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-2.5 py-1.5 text-[10px] font-semibold leading-none text-primary-strong">
-                <Sparkles size={13} strokeWidth={2} /> Featured
+                Featured
               </span>
             )}
           </div>
@@ -116,42 +86,36 @@ export function EventCard({
             {event.desc}
           </p>
         )}
-        {event.organizer && (
-          <p className="mb-3 inline-flex items-center gap-1.5 text-[11px] font-medium text-muted">
-            <Users size={14} strokeWidth={2} />
-            {event.organizer}
-          </p>
-        )}
         <div className="mt-auto grid grid-cols-2 gap-x-3 gap-y-2.5 border-t border-line pt-3 text-[12px] leading-4 font-medium text-muted">
           <MetadataItem
-            icon={<CalendarDays size={15} strokeWidth={2} />}
+            icon={<CalendarDays size={15} weight="regular" />}
             label={event.date}
             className="col-span-2"
           />
           <MetadataItem
-            icon={<MapPin size={15} strokeWidth={2} />}
+            icon={<MapPin size={15} weight="regular" />}
             label={event.place}
           />
           <MetadataItem
-            icon={<Trophy size={15} strokeWidth={2} />}
+            icon={<Trophy size={15} weight="regular" />}
             label={event.prize}
           />
           {event.registrationDeadline && (
             <MetadataItem
-              icon={<CalendarDays size={15} strokeWidth={2} />}
+              icon={<CalendarDays size={15} weight="regular" />}
               label={`Register by ${event.registrationDeadline}`}
               className="col-span-2"
             />
           )}
           {event.teamSize && (
             <MetadataItem
-              icon={<Users size={15} strokeWidth={2} />}
+              icon={<Users size={15} weight="regular" />}
               label={event.teamSize}
             />
           )}
           {typeof event.participants === "number" && (
             <MetadataItem
-              icon={<Users size={15} strokeWidth={2} />}
+              icon={<Users size={15} weight="regular" />}
               label={`${event.participants.toLocaleString()} participants`}
             />
           )}
@@ -193,9 +157,9 @@ function RegistrationBadge({
       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[10px] font-semibold leading-none ${colors}`}
     >
       {status === "open" ? (
-        <CheckCircle2 size={13} strokeWidth={2} />
+        <CheckCircle2 size={13} weight="regular" />
       ) : (
-        <CalendarDays size={13} strokeWidth={2} />
+        <CalendarDays size={13} weight="regular" />
       )}{" "}
       {labels[status]}
     </span>
@@ -236,7 +200,7 @@ function PosterArtwork({ theme }: { theme: string }) {
         </div>
         <Code2
           className="absolute right-[18%] top-[37%] size-6 text-white/60"
-          strokeWidth={1.7}
+          weight="regular"
         />
       </div>
     );
@@ -260,7 +224,7 @@ function PosterArtwork({ theme }: { theme: string }) {
       >
         <div className="absolute inset-y-0 right-0 w-[38%] bg-[radial-gradient(circle,var(--color-line)_1px,transparent_1px)] [background-size:14px_14px]" />
         <div className="absolute top-1/2 right-8 grid size-16 -translate-y-1/2 place-items-center rounded-2xl border border-line/70 bg-white/55 text-primary-strong/65">
-          <Code2 size={31} strokeWidth={1.6} />
+          <Code2 size={31} weight="light" />
         </div>
         <div className="absolute top-7 right-24 size-12 rotate-45 rounded-lg border border-line/60" />
       </div>

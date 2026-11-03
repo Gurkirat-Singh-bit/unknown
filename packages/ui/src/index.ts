@@ -8,3 +8,4 @@ export * from "./components/discovery/category-grid";
 export * from "./components/discovery/stats-row";
 export * from "./components/search/search-bar";
 export * from "./types/event";
+export * from "./components/inputs/dropdown";

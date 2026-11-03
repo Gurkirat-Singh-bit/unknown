@@ -1,80 +1,24 @@
 "use client";
 
-import { cloneElement, type ReactElement, type ReactNode } from "react";
-import {
-  ArrowRight,
-  Code2,
-  Globe2,
-  Lightbulb,
-  Trophy,
-  Users,
-  UsersRound,
-  Video,
-} from "lucide-react";
+import { ArrowUpRightIcon } from "@phosphor-icons/react/dist/csr/ArrowUpRight";
+import { CodeIcon } from "@phosphor-icons/react/dist/csr/Code";
+import { GlobeHemisphereWestIcon } from "@phosphor-icons/react/dist/csr/GlobeHemisphereWest";
+import { LightbulbIcon } from "@phosphor-icons/react/dist/csr/Lightbulb";
+import { TrophyIcon } from "@phosphor-icons/react/dist/csr/Trophy";
+import { UsersIcon } from "@phosphor-icons/react/dist/csr/Users";
+import { UsersThreeIcon } from "@phosphor-icons/react/dist/csr/UsersThree";
 
-const categories: {
-  icon: ReactNode;
-  title: string;
-  count: string;
-  iconColor: string;
-  iconBackground: string;
-  hoverBackground: string;
-  accent: string;
-}[] = [
+const categories = [
+  { icon: TrophyIcon, title: "Hackathons", count: "1,200+ events" },
+  { icon: UsersIcon, title: "Developer Meetups", count: "800+ events" },
+  { icon: CodeIcon, title: "Coding Competitions", count: "500+ events" },
+  { icon: LightbulbIcon, title: "Workshops", count: "300+ events" },
   {
-    icon: <Trophy />,
-    title: "Hackathons",
-    count: "1,200+ events",
-    iconColor: "text-primary-strong",
-    iconBackground: "bg-cyan-soft",
-    hoverBackground: "group-hover:bg-brand-soft",
-    accent: "bg-accent",
-  },
-  {
-    icon: <UsersRound />,
-    title: "Developer Meetups",
-    count: "800+ events",
-    iconColor: "text-primary-strong",
-    iconBackground: "bg-brand-soft",
-    hoverBackground: "group-hover:bg-brand-soft",
-    accent: "bg-primary",
-  },
-  {
-    icon: <Code2 />,
-    title: "Coding Competitions",
-    count: "500+ events",
-    iconColor: "text-primary-strong",
-    iconBackground: "bg-cyan-soft",
-    hoverBackground: "group-hover:bg-brand-soft",
-    accent: "bg-accent",
-  },
-  {
-    icon: <Lightbulb />,
-    title: "Workshops",
-    count: "300+ events",
-    iconColor: "text-primary-strong",
-    iconBackground: "bg-brand-soft",
-    hoverBackground: "group-hover:bg-brand-soft",
-    accent: "bg-primary",
-  },
-  {
-    icon: <Video />,
+    icon: GlobeHemisphereWestIcon,
     title: "Online Events",
     count: "1,000+ events",
-    iconColor: "text-primary-strong",
-    iconBackground: "bg-cyan-soft",
-    hoverBackground: "group-hover:bg-brand-soft",
-    accent: "bg-primary",
   },
-  {
-    icon: <Users />,
-    title: "Communities",
-    count: "50+ communities",
-    iconColor: "text-primary-strong",
-    iconBackground: "bg-brand-soft",
-    hoverBackground: "group-hover:bg-brand-soft",
-    accent: "bg-primary",
-  },
+  { icon: UsersThreeIcon, title: "Communities", count: "50+ communities" },
 ];
 
 export function CategoryGrid({
@@ -86,87 +30,44 @@ export function CategoryGrid({
 }) {
   return (
     <section
-      className="mx-auto w-full max-w-site px-4 pt-8 sm:px-6 lg:px-8"
       id="categories"
+      className="relative mx-auto mt-12 w-full max-w-site scroll-mt-8 border-t border-ink/20 px-4 pt-10 pb-14 sm:mt-16 sm:px-6 lg:px-8"
     >
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-x-4 gap-y-2 sm:mb-5">
-        <div>
-          <h2 className="flex items-center gap-2.5 font-display text-[18px] font-extrabold tracking-tight text-ink sm:gap-3 sm:text-xl">
-            <span className="grid size-6 shrink-0 place-items-center rounded-full bg-ink text-white">
-              <Globe2 size={14} strokeWidth={2} />
-            </span>
-            Explore by Category
-          </h2>
-          <p className="mt-1.5 ml-[34px] max-w-[290px] text-[12px] leading-relaxed text-muted sm:max-w-none sm:text-[13px]">
-            Find the perfect event, community, or opportunity that matches your
-            goals.
-          </p>
-        </div>
-        <a
-          className="group inline-flex shrink-0 items-center gap-1.5 pt-1.5 text-[12px] font-semibold text-primary-strong transition-colors hover:text-primary-strong focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary sm:text-[13px]"
-          href="#categories"
-        >
-          View All{" "}
-          <ArrowRight
-            size={15}
-            className="transition-transform duration-200 group-hover:translate-x-1"
-          />
-        </a>
+      <div className="mb-7 flex items-end justify-between gap-4">
+        <h2 className="font-display text-2xl font-bold tracking-tight text-ink sm:text-3xl">
+          Categories
+        </h2>
       </div>
-      <div className="grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 2xl:gap-4">
-        {categories.map(
-          ({
-            icon,
-            title,
-            count,
-            iconColor,
-            iconBackground,
-            hoverBackground,
-            accent,
-          }) => {
-            const isActive = activeCategory === title;
-            return (
-              <a
-                href="#hackathons"
-                key={title}
-                aria-label={`${title}, ${count}`}
-                aria-current={isActive ? "true" : undefined}
-                onClick={() => onSelectCategory?.(title)}
-                className={`group relative flex min-h-[88px] items-center gap-3 overflow-hidden rounded-[14px] border bg-surface px-3.5 py-3.5 transition-all duration-200 ease-out hover:-translate-y-[3px] hover:border-line hover:shadow-[0_8px_22px_rgba(15,23,42,0.08)] focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:min-h-[96px] sm:gap-3.5 sm:px-4 ${isActive ? "border-line shadow-[0_0_0_1px_rgba(15,23,42,0.12)]" : "border-line"}`}
-              >
-                <span
-                  aria-hidden="true"
-                  className={`absolute inset-y-3 left-0 w-[3px] rounded-r-full opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100 ${accent} ${isActive ? "opacity-100" : ""}`}
-                />
-                <span
-                  aria-hidden="true"
-                  className={`grid size-12 shrink-0 place-items-center rounded-[14px] transition duration-200 group-hover:scale-[1.05] sm:size-[50px] ${iconBackground} ${hoverBackground} ${iconColor}`}
-                >
-                  {cloneElement(
-                    icon as ReactElement<{
-                      size?: number;
-                      strokeWidth?: number;
-                    }>,
-                    { size: 24, strokeWidth: 2 },
-                  )}
+      <div className="grid gap-x-10 lg:grid-cols-2">
+        {categories.map(({ icon: Icon, title, count }) => {
+          const active = activeCategory === title;
+          return (
+            <a
+              key={title}
+              id={`category-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+              href="#hackathons"
+              aria-current={active ? "true" : undefined}
+              aria-label={`${title}, ${count}`}
+              onClick={() => onSelectCategory?.(title)}
+              className={`flex min-h-24 items-center gap-4 border-t px-2 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-cyan-ink sm:gap-5 ${active ? "border-ink bg-lime-soft" : "border-line hover:bg-lime-soft/50"}`}
+            >
+              <Icon size={25} weight="light" className="shrink-0 text-ink" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-ink sm:text-base">
+                  {title}
                 </span>
-                <span className="flex min-w-0 flex-1 flex-col gap-1">
-                  <b className="text-[13px] font-semibold leading-snug text-ink sm:text-[14px]">
-                    {title}
-                  </b>
-                  <small className="text-[12px] font-medium leading-snug text-muted">
-                    {count}
-                  </small>
+                <span className="mt-1 block text-[11px] text-muted">
+                  {count}
                 </span>
-                <ArrowRight
-                  aria-hidden="true"
-                  size={15}
-                  className="shrink-0 -translate-x-1 text-primary-strong opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100"
-                />
-              </a>
-            );
-          },
-        )}
+              </span>
+              <ArrowUpRightIcon
+                size={20}
+                weight="light"
+                className="shrink-0 text-ink"
+              />
+            </a>
+          );
+        })}
       </div>
     </section>
   );

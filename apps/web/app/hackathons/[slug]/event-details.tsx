@@ -1,17 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import {
-  ArrowRight,
-  CalendarDays,
-  Code2,
-  MapPin,
-  Trophy,
-  ArrowLeft,
-  ChevronRight,
-  Eye,
-  Zap,
-} from "lucide-react";
+import { ArrowRightIcon as ArrowRight } from "@phosphor-icons/react/dist/csr/ArrowRight";
+import { CalendarDotsIcon as CalendarDays } from "@phosphor-icons/react/dist/csr/CalendarDots";
+import { CodeIcon as Code2 } from "@phosphor-icons/react/dist/csr/Code";
+import { MapPinIcon as MapPin } from "@phosphor-icons/react/dist/csr/MapPin";
+import { TrophyIcon as Trophy } from "@phosphor-icons/react/dist/csr/Trophy";
+import { ArrowLeftIcon as ArrowLeft } from "@phosphor-icons/react/dist/csr/ArrowLeft";
+import { CaretRightIcon as ChevronRight } from "@phosphor-icons/react/dist/csr/CaretRight";
+import { EyeIcon as Eye } from "@phosphor-icons/react/dist/csr/Eye";
+import { LightningIcon as Zap } from "@phosphor-icons/react/dist/csr/Lightning";
 import { Navbar } from "@repo/ui";
 import { SiteFooter } from "@repo/ui";
 
@@ -69,7 +67,7 @@ export function HackathonDetailsPage({ slug }: { slug: string }) {
             <Code2
               aria-hidden="true"
               className="absolute right-8 top-8 hidden size-12 text-white/35 sm:block"
-              strokeWidth={1.35}
+              weight="light"
             />
           </div>
           <section className="flex flex-col rounded-[18px] border border-line/80 bg-surface p-5 shadow-[0_8px_28px_-22px_rgba(15,23,42,.3)] sm:p-6">
@@ -231,7 +229,7 @@ export function HackathonDetailsPage({ slug }: { slug: string }) {
                 />
                 <div className="flex items-center justify-between gap-2">
                   <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-contrast/25 text-white shadow-inner shadow-white/10">
-                    <CalendarDays size={23} strokeWidth={2.2} />
+                    <CalendarDays size={23} weight="bold" />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block font-display text-[15px] font-extrabold leading-tight">
@@ -258,7 +256,7 @@ export function HackathonDetailsPage({ slug }: { slug: string }) {
                     className="flex min-h-[67px] items-center gap-3 border-b border-line/80 py-3 last:border-0"
                   >
                     <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-soft to-brand-soft text-primary-strong">
-                      <Icon size={19} strokeWidth={2.2} />
+                      <Icon size={19} weight="bold" />
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block text-[11px] font-medium text-muted">
@@ -364,7 +362,7 @@ function DetailMetric({
 }) {
   return (
     <div className="flex min-w-0 gap-2.5">
-      <span className="mt-0.5 shrink-0 text-primary-strong [&>svg]:size-[17px] [&>svg]:stroke-[1.8]">
+      <span className="mt-0.5 shrink-0 text-primary-strong [&>svg]:size-[17px]">
         {icon}
       </span>
       <div className="min-w-0">

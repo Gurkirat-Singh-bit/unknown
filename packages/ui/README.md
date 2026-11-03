@@ -27,4 +27,9 @@ From this directory, run `bun run storybook`, `bun run build-storybook`,
 
 The neon yellow, neon cyan, and white theme is defined in `src/hackradar.css`. React Bits Gradient
 Text is installed as source under `src/components/react-bits`, with its upstream
-license alongside it. The hero uses it for the highlighted headline text.
+license alongside it. Its component examples remain available in Storybook.
+
+DM Sans and Manrope are self-hosted variable fonts in `src/fonts`. Their local
+`@font-face` rules live in `src/hackradar.css`, and their SIL Open Font License
+files are stored beside the font files. No Google Fonts request is needed at
+runtime.
