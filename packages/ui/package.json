@@ -4,8 +4,13 @@
   "private": true,
   "exports": {
     ".": "./src/index.ts",
-    "./*": "./src/*.tsx",
-    "./styles.css": "./src/hackradar.css"
+    "./components/*": "./src/components/*.tsx",
+    "./types": "./src/types/event.ts",
+    "./styles.css": "./src/hackradar.css",
+    "./hackradar": "./src/index.ts",
+    "./button": "./src/components/primitives/button.tsx",
+    "./card": "./src/components/primitives/card.tsx",
+    "./code": "./src/components/primitives/code.tsx"
   },
   "scripts": {
     "storybook": "storybook dev -p 6006",
@@ -26,7 +31,8 @@
     "typescript": "7.0.2"
   },
   "dependencies": {
-    "lucide-react": "^1.66.0",
+    "@phosphor-icons/react": "^2.1.10",
+    "@radix-ui/react-select": "^2.4.1",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   }

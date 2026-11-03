@@ -1,1 +1,2 @@
 @import "@repo/ui/styles.css";
+@source "./**/*.{ts,tsx}";
