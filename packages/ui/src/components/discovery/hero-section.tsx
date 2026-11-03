@@ -30,7 +30,7 @@ export function HeroSection({
     >
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-linear-to-b from-brand-soft via-accent-soft/20 to-transparent"
+        className="pointer-events-none absolute inset-0 bg-linear-to-br from-lime-soft via-white/50 to-cyan-soft"
       />
       <div className="relative mx-auto w-full max-w-site px-4 pt-7 text-center sm:px-6 lg:px-8 lg:pt-9">
         <div className="mx-auto mb-4 flex w-fit max-w-full flex-wrap items-center justify-center gap-x-2 gap-y-1 rounded-2xl bg-surface/95 px-3 py-1.5 text-[10px] text-ink shadow-md shadow-contrast/5">
@@ -46,7 +46,7 @@ export function HeroSection({
         <h1 className="mx-auto max-w-4xl font-display text-3xl leading-tight sm:leading-[1.1] font-extrabold tracking-[-1.3px] text-ink sm:text-4xl lg:text-[47px] lg:tracking-[-1.8px]">
           Discover Your Next
           <br />
-          <GradientText animationSpeed={8} pauseOnHover>
+          <GradientText animationSpeed={8} colors={["var(--color-primary-strong)", "var(--color-cyan-ink)", "var(--color-primary-strong)"]} pauseOnHover>
             Hackathon
           </GradientText>{" "}
           &amp; Developer Event

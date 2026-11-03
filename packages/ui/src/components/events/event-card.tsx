@@ -15,17 +15,19 @@ import {
 import type { EventMode, Hackathon } from "../../types/event";
 
 const coverStyle: Record<string, string> = {
-  summit: "bg-linear-to-br from-primary to-contrast",
-  ai: "bg-linear-to-br from-contrast to-primary-strong",
-  opensource: "bg-linear-to-br from-brand-soft to-accent-soft",
-  bangalore: "bg-linear-to-b from-contrast to-primary",
-  web3: "bg-linear-to-br from-accent-soft to-accent",
+  summit:
+    "bg-linear-to-br from-primary-strong via-poster-mid to-contrast before:bg-[repeating-linear-gradient(60deg,transparent_0_36px,#ffffff10_37px_44px)]",
+  ai: "bg-linear-to-br from-contrast via-poster-night to-poster-mid after:bg-[radial-gradient(ellipse_at_90%_80%,var(--color-primary),transparent_50%)]",
+  opensource:
+    "bg-linear-to-br from-brand-soft via-white to-accent-soft before:bg-[repeating-linear-gradient(130deg,transparent_0_30px,#b9ed3214_32px_48px)]",
+  bangalore: "bg-linear-to-b from-contrast via-poster-mid to-lime",
+  web3: "bg-linear-to-br from-yellow via-lime-soft to-cyan before:bg-[radial-gradient(circle_at_85%_75%,var(--color-primary-strong)_0_12%,transparent_13%),radial-gradient(circle_at_70%_20%,#ffffff99_0_6%,transparent_7%),repeating-linear-gradient(130deg,transparent_0_29px,#ffffff40_30px_42px)]",
 };
 
 const modeBadgeStyles: Record<Exclude<EventMode, "All">, string> = {
-  Online: "bg-accent-soft text-contrast",
+  Online: "bg-cyan text-on-cyan",
   "In-person": "bg-primary text-on-primary",
-  Hybrid: "bg-accent text-contrast",
+  Hybrid: "bg-cyan text-on-cyan",
 };
 
 export function EventCard({
@@ -227,9 +229,9 @@ function PosterArtwork({ theme }: { theme: string }) {
         <div className="absolute -top-10 -right-7 size-40 rounded-full border border-white/20" />
         <div className="absolute -top-4 right-2 size-24 rotate-45 border border-line/30" />
         <div className="absolute right-6 bottom-[-30px] grid size-28 rotate-12 grid-cols-2 gap-1.5 opacity-55">
-          <span className="rounded-lg border border-white/35 bg-surface/10" />
-          <span className="rounded-lg bg-accent/20" />
-          <span className="rounded-lg bg-line/25" />
+          <span className="rounded-lg border border-white/35 bg-white/10" />
+          <span className="rounded-lg bg-accent-soft/20" />
+          <span className="rounded-lg bg-accent-soft/25" />
           <span className="rounded-lg border border-white/25" />
         </div>
         <Code2
@@ -244,10 +246,10 @@ function PosterArtwork({ theme }: { theme: string }) {
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 overflow-hidden"
       >
-        <div className="absolute -right-7 -bottom-12 size-40 rounded-full bg-accent-soft/15 blur-xl" />
-        <div className="absolute top-1/2 right-7 size-20 -translate-y-1/2 rotate-12 rounded-[22px] border border-line/40 bg-accent-soft/10 shadow-[0_0_28px_rgba(56,189,248,0.12)]" />
+        <div className="absolute -right-7 -bottom-12 size-40 rounded-full bg-accent/15 blur-xl" />
+        <div className="absolute top-1/2 right-7 size-20 -translate-y-1/2 rotate-12 rounded-[22px] border border-line/40 bg-accent-soft/10 shadow-[0_0_28px_rgba(185,237,50,0.12)]" />
         <div className="absolute top-[24%] right-[22%] size-9 rotate-45 border border-line/45 bg-accent-soft/10" />
-        <div className="absolute right-[18%] bottom-[24%] size-2.5 rounded-full bg-accent-soft/90 shadow-[0_0_12px_rgba(56,189,248,0.65)]" />
+        <div className="absolute right-[18%] bottom-[24%] size-2.5 rounded-full bg-accent-soft/90 shadow-[0_0_12px_rgba(185,237,50,0.65)]" />
       </div>
     );
   if (theme === "opensource")
@@ -257,7 +259,7 @@ function PosterArtwork({ theme }: { theme: string }) {
         className="pointer-events-none absolute inset-0 overflow-hidden"
       >
         <div className="absolute inset-y-0 right-0 w-[38%] bg-[radial-gradient(circle,var(--color-line)_1px,transparent_1px)] [background-size:14px_14px]" />
-        <div className="absolute top-1/2 right-8 grid size-16 -translate-y-1/2 place-items-center rounded-2xl border border-line/70 bg-surface/55 text-primary-strong/65">
+        <div className="absolute top-1/2 right-8 grid size-16 -translate-y-1/2 place-items-center rounded-2xl border border-line/70 bg-white/55 text-primary-strong/65">
           <Code2 size={31} strokeWidth={1.6} />
         </div>
         <div className="absolute top-7 right-24 size-12 rotate-45 rounded-lg border border-line/60" />
@@ -273,15 +275,15 @@ function PosterArtwork({ theme }: { theme: string }) {
           {[35, 48, 40, 62, 44, 70, 52, 38].map((height, index) => (
             <span
               key={index}
-              className="w-4 rounded-t-sm border border-white/10 bg-ink/35"
+              className="w-4 rounded-t-sm border border-white/10 bg-slate-950/35"
               style={{ height: `${height}%` }}
             >
-              <span className="mt-1.5 block size-1 bg-accent/70" />
+              <span className="mt-1.5 block size-1 bg-accent-soft/70" />
             </span>
           ))}
         </div>
-        <div className="absolute right-[18%] bottom-0 h-[58%] w-px bg-accent/45" />
-        <div className="absolute right-[18%] bottom-[58%] size-2 -translate-x-1/2 rounded-full bg-accent/90 shadow-[0_0_12px_5px_rgba(56,189,248,0.32)]" />
+        <div className="absolute right-[18%] bottom-0 h-[58%] w-px bg-accent-soft/45" />
+        <div className="absolute right-[18%] bottom-[58%] size-2 -translate-x-1/2 rounded-full bg-accent-soft/90 shadow-[0_0_12px_5px_rgba(185,237,50,0.32)]" />
       </div>
     );
   if (theme === "web3")
@@ -291,7 +293,7 @@ function PosterArtwork({ theme }: { theme: string }) {
         className="pointer-events-none absolute inset-0 overflow-hidden"
       >
         <div className="absolute -top-9 right-8 size-28 rotate-45 border border-primary/25" />
-        <div className="absolute right-10 bottom-[-24px] size-20 rotate-45 rounded-xl bg-primary/70 shadow-[0_0_22px_rgba(15,23,42,0.22)]" />
+        <div className="absolute right-10 bottom-[-24px] size-20 rotate-45 rounded-xl bg-primary-strong/70 shadow-[0_0_22px_rgba(185,237,50,0.22)]" />
         <div className="absolute right-24 bottom-7 size-12 rotate-45 border border-primary/20" />
       </div>
     );

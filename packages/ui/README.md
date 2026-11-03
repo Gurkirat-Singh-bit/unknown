@@ -25,6 +25,6 @@ Import components from `@repo/ui`, or use a direct path such as
 From this directory, run `bun run storybook`, `bun run build-storybook`,
 `bun run check-types`, or `bun run lint`.
 
-The blue and slate theme is defined in `src/hackradar.css`. React Bits Gradient
+The neon yellow, neon cyan, and white theme is defined in `src/hackradar.css`. React Bits Gradient
 Text is installed as source under `src/components/react-bits`, with its upstream
 license alongside it. The hero uses it for the highlighted headline text.

@@ -100,7 +100,7 @@ function Stat({ icon, label, target, finalValue, format }: Statistic) {
       ref={statRef}
       className="group flex min-w-0 items-center gap-2 sm:gap-3 lg:gap-4"
     >
-      <span className="grid size-10 shrink-0 sm:size-12 lg:size-14 place-items-center rounded-2xl border border-line bg-brand-soft/80 text-primary-strong transition-colors duration-200 group-hover:bg-brand-soft motion-reduce:transition-none [&>svg]:size-6 [&>svg]:stroke-[2]">
+      <span className="grid size-10 shrink-0 sm:size-12 lg:size-14 place-items-center rounded-2xl border border-cyan bg-cyan text-on-cyan transition-colors duration-200 group-hover:bg-cyan motion-reduce:transition-none [&>svg]:size-6 [&>svg]:stroke-[2]">
         <span className="transition-transform duration-200 group-hover:-translate-y-0.5 motion-reduce:transition-none">
           {icon}
         </span>

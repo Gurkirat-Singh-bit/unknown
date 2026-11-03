@@ -95,7 +95,7 @@ export function Navbar() {
           href="#top"
           aria-label="HackRadar home"
         >
-          <span className="grid size-[30px] place-items-center rounded-[9px] rounded-bl-sm bg-contrast text-[23px] leading-none text-brand-soft shadow-sm shadow-contrast/20">
+          <span className="grid size-[30px] place-items-center rounded-[9px] rounded-bl-sm bg-gradient-to-br from-cyan to-primary-strong text-[23px] leading-none text-on-primary shadow-sm shadow-contrast/20">
             h
           </span>
           <span>HackRadar</span>
