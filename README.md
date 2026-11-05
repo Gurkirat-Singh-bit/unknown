@@ -2,6 +2,9 @@
 
 This Turborepo starter is maintained by the Turborepo core team.
 
+Cloudflare Workers deployment settings and commands are documented in
+[apps/web/README.md](apps/web/README.md#deploy-on-cloudflare-workers).
+
 ## Using this example
 
 Run the following command:

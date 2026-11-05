@@ -6,14 +6,16 @@
         "name": "next"
       }
     ],
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "allowImportingTsExtensions": true
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     "next-env.d.ts",
     "next.config.js",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    ".cloudflare/types/**/*.d.ts"
   ],
   "exclude": ["node_modules"]
 }

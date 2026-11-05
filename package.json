@@ -1,15 +1,11 @@
 {
   "name": "unknown",
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^2.0.0-beta.sha-52b0dc0e9",
     "@tailwindcss/postcss": "^4.3.3",
-    "@vitejs/plugin-react": "^6.1.2",
-    "cf": "^1.0.0-beta.13",
     "prettier": "3.9.6",
     "tailwindcss": "^4.3.3",
     "turbo": "^2.10.12",
-    "typescript": "7.0.2",
-    "vite": "8.3.0"
+    "typescript": "7.0.2"
   },
   "devEngines": {
     "packageManager": {
@@ -29,20 +25,16 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
-    "dev:vinext": "vite dev --port 3001",
-    "build:vinext": "vite build",
-    "start:vinext": "vite preview",
-    "deploy:vinext": "vinext-cloudflare deploy",
-    "deploy:response-store": "cf deploy --prebuilt --mode production --worker unknown-response-store"
+    "dev:vinext": "bun run --cwd apps/web dev:vinext",
+    "build:vinext": "bun run --cwd apps/web build",
+    "start:vinext": "bun run --cwd apps/web start:vinext",
+    "deploy:vinext": "bun run --cwd apps/web deploy",
+    "deploy:response-store": "bun run --cwd apps/web deploy:response-store",
+    "deploy": "bun run --cwd apps/web deploy:response-store && bun run --cwd apps/web deploy"
   },
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
-  "dependencies": {
-    "@cloudflare/workers-response-store": "^1.0.1",
-    "@vinext/cloudflare": "^1.0.1",
-    "vinext": "^1.0.1"
-  },
   "type": "module"
 }

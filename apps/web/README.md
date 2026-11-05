@@ -29,8 +29,44 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Deploy on Cloudflare Workers
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The production build uses vinext with the Cloudflare Vite plugin. Configuration
+lives beside the app in `vite.config.ts` and `cloudflare.config.ts`. `build:next`
+remains available for a standard Next.js build (served with `start:next`).
+Use Node.js 24 alongside Bun; the typed Cloudflare config loader requires Node.js.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+In Cloudflare Workers Builds, use these settings:
+
+- Root directory: repository root (`/`)
+- Install command: `bun install --frozen-lockfile`
+- Build command: `bun run build`
+- Deploy command: `bun run deploy`
+
+The deploy script uploads the built Response Store Worker first, then the web
+Worker, using the existing build output. It does not run Wrangler auto-detection
+or install packages during deployment. Always run the build before deploying.
+
+The configured Worker names are `unknown` (web) and `unknown-response-store`
+(cache). The web name must match the Worker connected to Workers Builds. To
+rename it, update `worker.name` in `cloudflare.config.ts` and the connected Worker
+in Cloudflare together. The cache name also appears in `deploy:response-store`.
+
+For local deployment, set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`
+(or authenticate with `bunx cf auth login`), then run from the repository root:
+
+```sh
+bun install --frozen-lockfile
+bun run build
+bun run deploy
+```
+
+To validate deployment configuration without uploading:
+
+```sh
+bun run --cwd apps/web deploy:check
+```
+
+The Response Store R2 bucket is provisioned by the deployment tooling. The app
+also retains the existing Cloudflare Images binding. See the
+[vinext Cloudflare guide](https://vinext.dev/docs/deploying/cloudflare).
