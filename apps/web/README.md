@@ -49,6 +49,9 @@ In Cloudflare Workers Builds, use these settings:
 The deploy script uploads the built Response Store Worker first, then the web
 Worker, using the existing build output. It does not run Wrangler auto-detection
 or install packages during deployment. Always run the build before deploying.
+The Response Store command clears `WRANGLER_CI_MATCH_TAG` and
+`WRANGLER_CI_OVERRIDE_NAME` for that command because Workers Builds sets them for
+the connected web Worker. The web deployment retains those identity checks.
 
 The configured Worker names are `unknown` (web) and `unknown-response-store`
 (cache). The web name must match the Worker connected to Workers Builds. To
