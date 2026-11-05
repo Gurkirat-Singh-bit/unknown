@@ -34,7 +34,10 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The production build uses vinext with the Cloudflare Vite plugin. Configuration
 lives beside the app in `vite.config.ts` and `cloudflare.config.ts`. `build:next`
 remains available for a standard Next.js build (served with `start:next`).
-Use Node.js 24 alongside Bun; the typed Cloudflare config loader requires Node.js.
+Use Node.js 24 alongside Bun 1.4.4; the typed Cloudflare config loader requires
+Node.js. The root `package.json` pins Bun through `packageManager` so Workers
+Builds selects a version that can read `bun.lock` (lockfile version 2).
+If the project has a `BUN_VERSION` build variable, set it to `1.4.4` as well.
 
 In Cloudflare Workers Builds, use these settings:
 
