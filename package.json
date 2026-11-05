@@ -1,5 +1,6 @@
 {
   "name": "unknown",
+  "packageManager": "bun@1.4.4",
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
     "prettier": "3.9.6",
@@ -10,7 +11,7 @@
   "devEngines": {
     "packageManager": {
       "name": "bun",
-      "version": "1.4.0"
+      "version": "1.4.4"
     }
   },
   "engines": {
