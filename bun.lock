@@ -30,7 +30,6 @@
       "name": "web",
       "version": "0.1.0",
       "dependencies": {
-        "@cloudflare/workers-response-store": "^1.0.1",
         "@phosphor-icons/react": "^2.1.10",
         "@repo/ui": "*",
         "@vinext/cloudflare": "^1.0.1",

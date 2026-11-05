@@ -14,8 +14,6 @@
     "start:vinext": "vite preview",
     "deploy": "vinext-cloudflare deploy --skip-build",
     "deploy:check": "vinext-cloudflare deploy --dry-run",
-    "deploy:storage": "node scripts/ensure-response-store-bucket.mjs",
-    "deploy:response-store": "WRANGLER_CI_MATCH_TAG= WRANGLER_CI_OVERRIDE_NAME= cf deploy --prebuilt --mode production --worker unknown-response-store",
     "start:next": "next start"
   },
   "dependencies": {
@@ -24,7 +22,6 @@
     "next": "16.3.4",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "@cloudflare/workers-response-store": "^1.0.1",
     "@vinext/cloudflare": "^1.0.1",
     "vinext": "^1.0.1"
   },

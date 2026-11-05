@@ -46,18 +46,13 @@ In Cloudflare Workers Builds, use these settings:
 - Build command: `bun run build`
 - Deploy command: `bun run deploy`
 
-The deploy script ensures the Response Store R2 bucket exists, then uploads the
-built Response Store Worker, then the web Worker, using the existing build output.
-It does not run Wrangler auto-detection
-or install packages during deployment. Always run the build before deploying.
-The Response Store command clears `WRANGLER_CI_MATCH_TAG` and
-`WRANGLER_CI_OVERRIDE_NAME` for that command because Workers Builds sets them for
-the connected web Worker. The web deployment retains those identity checks.
+The deploy script uploads only the frontend Worker (`unknown`) using the existing
+build output. It has no database, R2, cache-service, or Cloudflare Images setup.
+Always run the build before deploying. The frontend continues to show the sample
+events already in the app.
 
-The configured Worker names are `unknown` (web) and `unknown-response-store`
-(cache). The web name must match the Worker connected to Workers Builds. To
-rename it, update `worker.name` in `cloudflare.config.ts` and the connected Worker
-in Cloudflare together. The cache name also appears in `deploy:response-store`.
+The Worker name in `cloudflare.config.ts` must match the Worker connected to
+Workers Builds.
 
 For local deployment, set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`
 (or authenticate with `bunx cf auth login`), then run from the repository root:
@@ -73,10 +68,3 @@ To validate deployment configuration without uploading:
 ```sh
 bun run --cwd apps/web deploy:check
 ```
-
-The `deploy:storage` step reads the bucket name from build output and creates it
-only if missing. The deployment token needs **Workers R2 Storage Write** access
-to the target account, and R2 must be enabled there. Authentication and permission
-errors stop deployment before either Worker is uploaded. The app also retains
-the existing Cloudflare Images binding. See the
-[vinext Cloudflare guide](https://vinext.dev/docs/deploying/cloudflare).

@@ -1,11 +1,16 @@
 # Implementation Status
 
-Snapshot from the repository and project notes dated 2026-11-01.
+Backend snapshot from the repository and project notes dated 2026-11-01.
+
+Frontend deployment update (2026-11-05): `bun run build` builds the current UI
+with vinext, and `bun run deploy` uploads only the frontend Worker. The UI uses
+sample event data. D1, scraper scheduling, event-image storage, and separate cache
+services are outside this deployment.
 
 ## Implemented
 
 - Bun workspaces and Turborepo monorepo.
-- `apps/web` contains a Next.js app with a placeholder event-finder page.
+- `apps/web` contains the event-finder UI, built for Cloudflare with vinext.
 - `apps/scraper` contains a plain Worker entry with a `scheduled()` handler and no HTTP routes.
 - Its separately exported `scrapeDevpost()` function collects open and upcoming listings from Devpost's paginated JSON endpoint, deduplicates source IDs, and rejects incomplete collection.
 - Shared source settings live in `@repo/config/sources`; minimal Zod event/page schemas and inferred types live in `@repo/core/schemas/devpost`. Cheerio has been removed.
@@ -15,7 +20,7 @@ Snapshot from the repository and project notes dated 2026-11-01.
 - `@repo/db` contains the Drizzle D1 client, events table, generated initial migration, and validated read/upsert helpers.
 - The scraper normalizes source records and calls D1 upserts through a required `DB` binding. No real binding or production migration has been configured/applied yet.
 - R2 thumbnail copying is implemented before D1 writes with a shared 50-external-request budget. Deferred/failed new images stay null while event updates continue; later runs prioritize missing thumbnails. Source-URL-hash keys reuse images for 24 hours; bounded HTTPS downloads refresh older objects. The stored imageUrl points at the configured public R2 domain. Real R2 setup is pending; the example Wrangler config is not active.
-- Frontend application files remain untouched; its server can adopt shared queries in a later integration step.
+- The frontend renders sample event data; its server can adopt shared database queries in a later integration step.
 - Shared package/scraper type checks pass. Six isolated Miniflare D1 integration tests and nine collection/normalization tests pass. They cover upserts, validation, filters, timestamps, batching, open/upcoming pagination, duplicate records, malformed/blocked responses, normalization, and URL schemes. Production code and test code are type-checked. The generated migration matches the table schema.
 - Twelve additional isolated R2/D1 tests cover image bytes/metadata, cache reuse/refresh, response/size validation, and scheduled ingestion, shared request budgeting, progress across runs, and non-blocking image failures. A real 37,180-byte Devpost PNG was also copied to local R2 and its URL persisted in local D1; production serving remains unverified.
 

@@ -44,7 +44,7 @@ The frontend renders the event discovery experience. Its server-side code will q
 
 - `apps/scraper`: a plain scheduled Worker handler calling a paginated Devpost JSON collector. Shared config supplies source settings; shared core supplies minimal Zod source schemas. No HTTP routes or browser are needed for listing collection.
 - `apps/web`: a minimal Next.js app showing a heading and description.
-- Root Cloudflare configuration targets the Vinext application and a response-store worker. It does not configure the planned event scraper, D1, or R2.
+- `apps/web/cloudflare.config.ts` targets only the frontend Worker. The frontend deployment does not configure the scraper, D1, R2, or a separate cache Worker.
 
 The collector validates the minimal source shape and deduplicates by ID. Shared normalized events, a Devpost normalizer, and D1 read/upsert helpers are implemented. The handler requires `env.DB`; real bindings, migration application, Cron Trigger/deployment, and frontend integration remain pending.
 
