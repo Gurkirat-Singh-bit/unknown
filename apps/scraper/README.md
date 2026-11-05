@@ -37,7 +37,7 @@ wrangler d1 migrations apply DB --remote --config wrangler.jsonc
 wrangler deploy --config wrangler.jsonc
 ```
 
-Run these from `apps/scraper`. Database creation, domain connection, active config, and remote deployment have not been performed by this change. The existing Bun collection command below still fetches only source JSON and does not require R2.
+Run these from `apps/scraper`. Database creation, domain connection, active config, and remote deployment have not been performed by this change. The local workflow below uses persistent emulated D1/R2 without account access.
 
 ## Run locally
 
@@ -45,11 +45,35 @@ From the repository root:
 
 ```sh
 bun install
-bun run --filter '@repo/config' --filter '@repo/core' --filter scraper check-types
-bun -e 'import { scrapeDevpost } from "./apps/scraper/src/sources/devpost.ts"; const events = await scrapeDevpost(); console.log(events.length);'
+bun run --filter '@repo/config' --filter '@repo/core' --filter '@repo/db' --filter scraper check-types
+bun run --cwd apps/scraper scrape:local
+bun run --cwd apps/scraper inspect:local
 ```
 
-The manual command runs in Bun. Cloudflare runtime verification, deployment configuration, and the actual Cron Trigger are pending. Defining `scheduled()` alone does not create a schedule.
+`scrape:local` fetches real Devpost listings and invokes the existing scheduled handler in Bun with Miniflare D1/R2 bindings. It preserves the handler's request budget, image caching, and failure behavior; ingestion failures exit unsuccessfully. No Cloudflare account, credentials, or active Wrangler configuration is required. Miniflare is disposed after each command, including failures.
+
+Both commands persist storage under `apps/scraper/.local/`, resolved relative to the package regardless of the working directory. Shared SQL migrations from `packages/db/migrations` run once per local database, tracked in its `local_migrations` ledger. Each migration and its ledger entry commit together. Repeated runs preserve events and image objects. Run commands sequentially against this directory. To reset local data, remove `.local/` while neither command is running.
+
+`inspect:local` prints total events, events with images, status counts, five sample records, and the total R2 object count and bytes. If images exist, it exports one via the R2 binding as `.local/sample-image.<extension>` and prints its metadata and path for visual inspection. The whole `.local/` directory is ignored by Git.
+
+Local event image URLs use `https://images.local.test`. This is a placeholder domain; this workflow does not serve images over HTTP. Inspect the exported file or read bytes through the R2 binding. New images may remain pending because of failed downloads or the shared request budget; subsequent runs reuse recent objects and can fill more missing thumbnails.
+
+This verifies the handler in Bun against persistent Cloudflare storage emulation. Deployed Worker execution, deployment configuration, and the actual Cron Trigger remain pending. Defining `scheduled()` alone does not create a schedule.
+
+### Verified local run (2026-11-05)
+
+The 27 existing tests plus the local persistence test pass (28 total). Type checks pass for the scraper, including scripts/tests, and `@repo/config`, `@repo/core`, and `@repo/db`.
+
+Two consecutive real ingestions succeeded against the same local directory:
+
+| Result | First run | Second run |
+| --- | ---: | ---: |
+| Events | 184 | 184 |
+| Events with stored images | 59 | 88 |
+| R2 image objects | 29 | 58 |
+| Pending event images | 125 | 96 |
+
+Both runs had 55 open and 129 upcoming events and no logged image download failures. Pending images were deferred by the request budget. Thumbnails can be shared across events, so event image counts differ from object counts. All 184 source identities and creation timestamps survived; update timestamps advanced. All 29 first-run objects retained their keys, ETags, upload timestamps, fetch metadata, and sizes on the second run. Reading every second-run object through R2 returned nonempty bytes matching its stored size, totaling 1,869,806 bytes. The exported sample PNG was visually inspected successfully. These are observations of a changing live catalogue, not fixed expected totals.
 
 ## Shared settings and schemas
 
@@ -62,7 +86,7 @@ The manual command runs in Bun. Cloudflare runtime verification, deployment conf
 
 ## How collection works
 
-1. The scheduled handler validates its DB/R2/public URL settings, captures a run timestamp, awaits `scrapeDevpost()`, maps its records through `normalizeDevpostEvent()`, stores images in R2, and upserts through `@repo/db`. Collection/validation and D1 write errors propagate. Image failures are logged separately and leave pending thumbnails without rejecting otherwise valid event updates. The standalone collection command above only fetches source records; it does not write to D1 or R2.
+1. The scheduled handler validates its DB/R2/public URL settings, captures a run timestamp, awaits `scrapeDevpost()`, maps its records through `normalizeDevpostEvent()`, stores images in R2, and upserts through `@repo/db`. Collection/validation and D1 write errors propagate. Image failures are logged separately and leave pending thumbnails without rejecting otherwise valid event updates. The local scrape command invokes this same handler with emulated bindings.
 2. A loop starts at page 1 and stops at the configured page cap. Subsequent requests wait for the configured delay.
 3. `new URL(...)`, `searchParams.append(...)`, and `searchParams.set(...)` build requests with both `status[]=open` and `status[]=upcoming`, plus the current page number. URL encoding is handled automatically.
 4. `fetch()` downloads JSON with an `AbortSignal` timeout and redirects disabled; every request consumes the shared external budget. HTTP errors and non-JSON content types reject the run. There is no browser or HTML parser.

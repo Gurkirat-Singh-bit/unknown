@@ -1,2 +1,5 @@
 # deps
 node_modules/
+
+# Persistent local D1/R2 and exported images
+.local/

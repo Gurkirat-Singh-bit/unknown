@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "test": "bun test",
-    "check-types": "tsc --noEmit && tsc -p tsconfig.tests.json"
+    "check-types": "tsc --noEmit && tsc -p tsconfig.tests.json",
+    "scrape:local": "bun scripts/scrape-local.ts",
+    "inspect:local": "bun scripts/inspect-local.ts"
   },
   "dependencies": {
     "@repo/config": "*",
