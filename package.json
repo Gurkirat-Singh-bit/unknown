@@ -31,7 +31,7 @@
     "start:vinext": "bun run --cwd apps/web start:vinext",
     "deploy:vinext": "bun run --cwd apps/web deploy",
     "deploy:response-store": "bun run --cwd apps/web deploy:response-store",
-    "deploy": "bun run --cwd apps/web deploy:response-store && bun run --cwd apps/web deploy"
+    "deploy": "bun run --cwd apps/web deploy:storage && bun run --cwd apps/web deploy:response-store && bun run --cwd apps/web deploy"
   },
   "workspaces": [
     "apps/*",

@@ -46,8 +46,9 @@ In Cloudflare Workers Builds, use these settings:
 - Build command: `bun run build`
 - Deploy command: `bun run deploy`
 
-The deploy script uploads the built Response Store Worker first, then the web
-Worker, using the existing build output. It does not run Wrangler auto-detection
+The deploy script ensures the Response Store R2 bucket exists, then uploads the
+built Response Store Worker, then the web Worker, using the existing build output.
+It does not run Wrangler auto-detection
 or install packages during deployment. Always run the build before deploying.
 The Response Store command clears `WRANGLER_CI_MATCH_TAG` and
 `WRANGLER_CI_OVERRIDE_NAME` for that command because Workers Builds sets them for
@@ -73,6 +74,9 @@ To validate deployment configuration without uploading:
 bun run --cwd apps/web deploy:check
 ```
 
-The Response Store R2 bucket is provisioned by the deployment tooling. The app
-also retains the existing Cloudflare Images binding. See the
+The `deploy:storage` step reads the bucket name from build output and creates it
+only if missing. The deployment token needs **Workers R2 Storage Write** access
+to the target account, and R2 must be enabled there. Authentication and permission
+errors stop deployment before either Worker is uploaded. The app also retains
+the existing Cloudflare Images binding. See the
 [vinext Cloudflare guide](https://vinext.dev/docs/deploying/cloudflare).
