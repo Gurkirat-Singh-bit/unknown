@@ -14,7 +14,7 @@
     "start:vinext": "vite preview",
     "deploy": "vinext-cloudflare deploy --skip-build",
     "deploy:check": "vinext-cloudflare deploy --dry-run",
-    "deploy:response-store": "cf deploy --prebuilt --mode production --worker unknown-response-store",
+    "deploy:response-store": "WRANGLER_CI_MATCH_TAG= WRANGLER_CI_OVERRIDE_NAME= cf deploy --prebuilt --mode production --worker unknown-response-store",
     "start:next": "next start"
   },
   "dependencies": {
