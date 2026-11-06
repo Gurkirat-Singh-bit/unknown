@@ -1,113 +1,97 @@
 # Devpost scraper
 
-The Worker entry is `src/index.ts`, with a scheduled handler and no HTTP routes. `src/sources/devpost.ts` collects open and upcoming hackathons from Devpost's JSON listing endpoint across multiple pages. The scheduled handler normalizes the records, copies thumbnails to R2, and calls the shared Drizzle upsert helper using `env.DB`. Real D1/R2 bindings, a public image domain, applied migrations, and deployment schedule must still be configured before deploying it.
+The Cloudflare Worker in `src/index.ts` collects open/upcoming Devpost listings on a six-hour schedule, normalizes them, stores copied thumbnails in Workers KV, and upserts events into D1. Its HTTP handler serves saved images only. Production uses Workers, D1, and KV; R2 activation and a custom image domain are not required.
 
-## Image storage
+## Deploy
 
-`src/storage/images.ts` downloads normalized HTTPS image URLs into the `EVENT_IMAGES` R2 binding. D1's existing `imageUrl` field receives the public R2 URL, so no database migration or frontend code change is needed. Missing, failed, or deferred images remain null until a later successful download. Event updates continue even when thumbnails are unavailable. The exported normalizer still returns the source URL; the storage step replaces it before persistence.
-
-- `@repo/config/images` owns the 15-second download timeout, 5 MiB size limit, 24-hour refresh interval, supported raster MIME types, and one-hour public cache lifetime.
-- Keys are `events/<source>/<SHA-256 of source image URL>`. Stable source URLs reuse objects; changed URLs produce different keys. Every run checks R2 metadata; objects younger than 24 hours need no external image download. Old objects are refreshed under the same key, so CDN/browser caches can retain their previous bytes for up to the configured cache lifetime.
-- Downloads run sequentially to bound concurrent connections and memory. Declared and streamed byte counts are limited. Responses must declare JPEG, PNG, WebP, GIF or AVIF; SVG, HTML, redirects, empty bodies, and failed HTTP responses are rejected. This is MIME validation, not image decoding or transcoding.
-- Event collection and validation must complete before D1 writes. Image preparation runs before persistence, but individual image failures are logged and do not block event updates. An existing R2 object remains usable after a failed/deferred refresh; a new or changed source URL without a stored object stays null. Source-hosted URLs are never substituted. Unreferenced objects are not automatically deleted; retention/garbage collection is pending. D1 still commits batches independently once writes start.
-- `src/request-budget.ts` shares a budget of 50 external requests between Devpost pages and image downloads. Redirects are rejected so they cannot silently consume extra requests. Listing collection takes priority and still rejects incomplete results. Remaining requests download thumbnails; the rest are deferred to subsequent scheduled runs. R2 binding calls and D1 calls have separate platform limits and do not consume this external-request budget.
-- Missing objects are prioritized over refreshes; stale objects refresh oldest first. Missing-image order rotates by six-hour time slot so persistent failures are less likely to monopolize the budget. Duplicate image URLs within a source share a download. At 19 listing pages, up to 31 distinct images can download per run; 166 initially uncached images need at least six successful runs if the catalogue remains stable. Existing images remain visible while waiting for refresh.
-- This bounds external requests, not total CPU or every account quota. Free Cron invocations have a 10 ms CPU allowance; deployed CPU usage, internal calls, and source access still require verification. If CPU is exceeded, processing must be split further. No paid plan is required by configuration. See [Workers limits](https://developers.cloudflare.com/workers/platform/limits/).
-- Use R2 Standard storage to receive its included monthly allowance (10 GB-month, 1 million Class A and 10 million Class B operations). For illustration, 166 objects at the 5 MiB cap total about 0.87 GB; retained older objects and frontend reads add usage. R2 is usage-billed beyond its free allowance, rather than a guaranteed zero-charge storage cap. Account-wide usage must stay within that allowance. See [R2 pricing](https://developers.cloudflare.com/r2/pricing/).
-
-## R2 deployment setup
-
-`wrangler.example.jsonc` is a template, not an active deployment configuration. Copy it to `wrangler.jsonc`, replace the D1 database ID and public image domain, and confirm the account/resources before deploying. Its six-hour schedule invokes `scheduled()` at 00:00, 06:00, 12:00 and 18:00 UTC after deployment.
-
-Required bindings/settings:
-
-| Name | Value |
-| --- | --- |
-| `DB` | D1 event database, with `packages/db/migrations` applied |
-| `EVENT_IMAGES` | Dedicated R2 bucket, suggested name `unknown-event-images` |
-| `IMAGE_PUBLIC_BASE_URL` | Public HTTPS root for that bucket, e.g. `https://images.your-domain.com`. Path prefixes such as `/assets/` are rejected so public URL paths match the uploaded object keys. |
-
-Use a dedicated image bucket, separate from the existing Vinext response-store cache. Connect a public custom domain to the image bucket for production. A bucket binding alone does not make objects public; the S3 API URL is not the public image URL. An enabled `r2.dev` URL is suitable for testing and is rate-limited. No scraper HTTP endpoint is required to serve images. See [public R2 buckets](https://developers.cloudflare.com/r2/buckets/public-buckets/) and [Worker bindings](https://developers.cloudflare.com/r2/api/workers/workers-api-usage/).
-
-Example resource commands after installing/pinning Wrangler in the scraper package and authenticating the intended account:
-
-```sh
-wrangler r2 bucket create unknown-event-images
-wrangler d1 migrations apply DB --remote --config wrangler.jsonc
-wrangler deploy --config wrangler.jsonc
-```
-
-Run these from `apps/scraper`. Database creation, domain connection, active config, and remote deployment have not been performed by this change. The local workflow below uses persistent emulated D1/R2 without account access.
-
-## Run locally
-
-From the repository root:
+Wrangler 4.157.0 is pinned in this package. Use Node.js 24 or newer and Bun, as required by the repository. From the repository root:
 
 ```sh
 bun install
-bun run --filter '@repo/config' --filter '@repo/core' --filter '@repo/db' --filter scraper check-types
+bun run --cwd apps/scraper cf login --device --browser=false
+bun run --cwd apps/scraper cf whoami
+bun run --cwd apps/scraper cf d1 list
+bun run --cwd apps/scraper cf kv namespace list
+```
+
+Select the intended account. Create the following resources only if they do not already exist:
+
+```sh
+bun run --cwd apps/scraper cf d1 create unknown-events
+bun run --cwd apps/scraper cf kv namespace create EVENT_IMAGES_KV
+cp apps/scraper/wrangler.example.jsonc apps/scraper/wrangler.jsonc
+```
+
+Add the chosen `account_id`, D1 `database_id`, and KV namespace `id` to `wrangler.jsonc`. This account-specific file is ignored by Git. Keep credentials out of it. If the login can access multiple accounts, supply `CLOUDFLARE_ACCOUNT_ID` when creating resources before the configuration exists.
+
+| Setting | Purpose |
+| --- | --- |
+| `DB` | D1 event database with `packages/db/migrations` applied |
+| `EVENT_IMAGES_KV` | Dedicated KV namespace for copied image bytes and metadata |
+| `IMAGE_PUBLIC_BASE_URL` | Worker's public HTTPS origin, e.g. `https://unknown-scraper.YOUR_SUBDOMAIN.workers.dev` |
+| `workers_dev` | Enabled so the Worker can serve images without a custom domain |
+| Cron | `0 */6 * * *`: 00:00, 06:00, 12:00, 18:00 UTC |
+
+The image base must be an HTTPS domain root without credentials, a path prefix, query, or fragment. URLs use the same `events/<source>/<SHA-256 of source image URL>` paths as the saved objects.
+
+```sh
+bun run --cwd apps/scraper deploy:check
+bun run --cwd apps/scraper db:migrate:remote
+bun run --cwd apps/scraper deploy
+bun run --cwd apps/scraper logs
+```
+
+The bundle check creates no remote resources. The migration command updates the configured remote database, and deployment publishes the Worker and Cron Trigger. Verify a successful scheduled invocation, remote records, and a saved public image URL:
+
+```sh
+bun run --cwd apps/scraper cf d1 execute DB --remote --config wrangler.jsonc --command 'SELECT status, COUNT(*) AS count, COUNT(image_url) AS with_images FROM events GROUP BY status'
+```
+
+The Worker serves only `GET` and `HEAD` on `/events/<source>/<64-character lowercase SHA-256>`. Other paths return 404 and other methods on image paths return 405. There is no public endpoint that starts scraping, accepts an arbitrary source URL, or enumerates keys. Images include their validated raster content type, `nosniff`, public cross-origin access, and a one-hour cache lifetime. Missing objects return 404 without an external download. KV is eventually consistent; a newly written image can briefly be unavailable in another location. Failed responses are not given the image cache policy.
+
+## Image caching and request batches
+
+- `@repo/config/images` owns the 15-second download timeout, 5 MiB cap, accepted JPEG/PNG/WebP/GIF/AVIF types, 24-hour refresh interval, and one-hour public cache lifetime. MIME validation does not decode or transcode images.
+- Downloads are sequential. Declared and streamed sizes are checked; insecure URLs, redirects, failed responses, unsupported types, and empty bodies are rejected. Workers does not implement `redirect: 'error'`, so downloads use `manual` and reject non-success status codes without following redirects.
+- Every invocation scans paginated KV image metadata once. This avoids reading image bodies or making a KV list call per event just to check freshness. Metadata includes source URL, content type, fetch timestamp, and byte size. A successful upload saves bytes and metadata in one KV write.
+- Listing collection has priority within a shared budget of 50 external requests. Remaining requests download images. Missing images are prioritized over stale refreshes; the missing order rotates every six hours to reduce starvation. Duplicate source URLs share a download. Recent objects are reused across invocations.
+- A run can leave new images null when the budget is exhausted or a download fails. Subsequent scheduled runs collect current listings again, reuse saved objects, and fill another image batch. Existing images stay usable after failed/deferred refreshes. The 50-request platform limit is never raised or bypassed.
+- Image failures are logged and do not block event updates. Listing/validation failures abort before event writes. D1 batches commit independently, so a failure after writes begin can leave earlier batches committed; stable source identities make repeat ingestion safe.
+- Source-hosted image URLs are never substituted into persisted event records. Old image objects are retained; garbage collection is pending.
+
+Workers Free allows 50 external subrequests and 1,000 internal service subrequests per invocation. KV's free allowance includes 1 GB storage, 100,000 reads/day, 1,000 writes/day, and 1,000 list requests/day, shared with other account usage. Four scheduled runs can attempt at most 200 image downloads/writes per day before listing requests are deducted; manual runs add usage. Retained objects consume storage over time. Free-plan operations fail after their quota is reached. The request budget does not guarantee compliance with every quota or CPU limit: Free Cron CPU has a 10 ms allowance and must be checked in deployed metrics. This configuration does not upgrade the account's plan.
+
+See [Workers limits](https://developers.cloudflare.com/workers/platform/limits/), [KV pricing](https://developers.cloudflare.com/kv/platform/pricing/), [KV consistency](https://developers.cloudflare.com/kv/concepts/how-kv-works/), and the [Workers Request API](https://developers.cloudflare.com/workers/runtime-apis/request/).
+
+## Persistent local workflow
+
+```sh
 bun run --cwd apps/scraper scrape:local
 bun run --cwd apps/scraper inspect:local
 ```
 
-`scrape:local` fetches real Devpost listings and invokes the existing scheduled handler in Bun with Miniflare D1/R2 bindings. It preserves the handler's request budget, image caching, and failure behavior; ingestion failures exit unsuccessfully. No Cloudflare account, credentials, or active Wrangler configuration is required. Miniflare is disposed after each command, including failures.
+No Cloudflare account is required for these commands. `scrape:local` invokes the same scheduled handler in Bun with real network requests and persistent Miniflare D1/KV bindings. Both commands always dispose of Miniflare; ingestion failures exit unsuccessfully.
 
-Both commands persist storage under `apps/scraper/.local/`, resolved relative to the package regardless of the working directory. Shared SQL migrations from `packages/db/migrations` run once per local database, tracked in its `local_migrations` ledger. Each migration and its ledger entry commit together. Repeated runs preserve events and image objects. Run commands sequentially against this directory. To reset local data, remove `.local/` while neither command is running.
+Storage is resolved relative to the scraper package under ignored `apps/scraper/.local/`, regardless of the working directory. D1's `local_migrations` ledger applies each shared SQL file once; a migration and its ledger entry commit together. Repeated runs preserve events and images. Local images downloaded by the earlier R2 workflow are copied into KV when their keys are missing, preserving their metadata and existing event paths. Legacy R2 files remain available on disk, and the production Worker has no R2 binding. The image pipeline also retains an R2 adapter-compatible interface for its existing regression tests.
 
-`inspect:local` prints total events, events with images, status counts, five sample records, and the total R2 object count and bytes. If images exist, it exports one via the R2 binding as `.local/sample-image.<extension>` and prints its metadata and path for visual inspection. The whole `.local/` directory is ignored by Git.
+`inspect:local` prints event/status counts, sample records, and KV image object count and bytes. It exports one stored image as `.local/sample-image.<extension>` for inspection. Local image URLs use the placeholder `https://images.local.test`; this command does not start an image server. Read/export bytes through KV, or use Wrangler to exercise the HTTP handler. Run local commands sequentially against the same directory; remove `.local/` while commands are stopped to reset all local data.
 
-Local event image URLs use `https://images.local.test`. This is a placeholder domain; this workflow does not serve images over HTTP. Inspect the exported file or read bytes through the R2 binding. New images may remain pending because of failed downloads or the shared request budget; subsequent runs reuse recent objects and can fill more missing thumbnails.
+## Verification
 
-This verifies the handler in Bun against persistent Cloudflare storage emulation. Deployed Worker execution, deployment configuration, and the actual Cron Trigger remain pending. Defining `scheduled()` alone does not create a schedule.
+```sh
+bun test apps/scraper/tests packages/db/tests
+bun run --filter '@repo/config' --filter '@repo/core' --filter '@repo/db' --filter scraper check-types
+```
 
-### Verified local run (2026-11-05)
+The suite includes 35 tests: source validation/collection, D1 queries/upserts, download/cache/failure behavior, persistence after dispose/reopen, KV metadata pagination, batch progress, public GET/HEAD responses, rejected private/arbitrary paths, and scheduled KV-to-D1 integration. Scripts and tests are included in type checks.
 
-The 27 existing tests plus the local persistence test pass (28 total). Type checks pass for the scraper, including scripts/tests, and `@repo/config`, `@repo/core`, and `@repo/db`.
+Before the KV migration, two live local R2 runs saved 184 events (55 open, 129 upcoming), grew from 29 to 58 image objects, and preserved all source identities and creation timestamps. Those objects totaled 1,869,806 bytes. A Worker runtime check then caught and fixed the unsupported redirect mode. These observations describe a changing live catalogue, not fixed expected totals. Current KV/deployment observations are recorded in `docs/review.md` at the repository root.
 
-Two consecutive real ingestions succeeded against the same local directory:
+## Source contracts and remaining work
 
-| Result | First run | Second run |
-| --- | ---: | ---: |
-| Events | 184 | 184 |
-| Events with stored images | 59 | 88 |
-| R2 image objects | 29 | 58 |
-| Pending event images | 125 | 96 |
-
-Both runs had 55 open and 129 upcoming events and no logged image download failures. Pending images were deferred by the request budget. Thumbnails can be shared across events, so event image counts differ from object counts. All 184 source identities and creation timestamps survived; update timestamps advanced. All 29 first-run objects retained their keys, ETags, upload timestamps, fetch metadata, and sizes on the second run. Reading every second-run object through R2 returned nonempty bytes matching its stored size, totaling 1,869,806 bytes. The exported sample PNG was visually inspected successfully. These are observations of a changing live catalogue, not fixed expected totals.
-
-## Shared settings and schemas
-
-- `packages/config/src/sources.ts` exports `sources` through `@repo/config/sources`. Devpost settings are the JSON endpoint URL, open/upcoming status filters, 30-second request timeout, 50-page safety cap, and a 500-millisecond delay between pages.
-- `packages/core/src/schemas/devpost.ts` exports `devpostEventSchema`, `devpostPageSchema`, and their inferred TypeScript types through `@repo/core/schemas/devpost`.
-- The normalized product event and read-filter contracts are exported from `@repo/core/schemas/event` and `@repo/core/schemas/event-filters`. Drizzle queries live in `@repo/db`; the scraper depends on all three shared packages.
-- Zod belongs to `@repo/core`; the scraper depends on that workspace package. Other apps can declare the same dependency when they need these contracts.
-- Event validation currently requires a positive integer ID, nonempty title, valid URL, and recognized open state. Extra source fields are preserved using `.passthrough()`. This is a minimal source contract, not a fully normalized frontend/database event schema.
-- Page validation requires a hackathon array and pagination metadata. It rejects the entire page if an event fails the minimal schema.
-
-## How collection works
-
-1. The scheduled handler validates its DB/R2/public URL settings, captures a run timestamp, awaits `scrapeDevpost()`, maps its records through `normalizeDevpostEvent()`, stores images in R2, and upserts through `@repo/db`. Collection/validation and D1 write errors propagate. Image failures are logged separately and leave pending thumbnails without rejecting otherwise valid event updates. The local scrape command invokes this same handler with emulated bindings.
-2. A loop starts at page 1 and stops at the configured page cap. Subsequent requests wait for the configured delay.
-3. `new URL(...)`, `searchParams.append(...)`, and `searchParams.set(...)` build requests with both `status[]=open` and `status[]=upcoming`, plus the current page number. URL encoding is handled automatically.
-4. `fetch()` downloads JSON with an `AbortSignal` timeout and redirects disabled; every request consumes the shared external budget. HTTP errors and non-JSON content types reject the run. There is no browser or HTML parser.
-5. `devpostPageSchema.safeParse(...)` validates the response. Validation failures throw with the Zod error attached as the cause. A separate check ensures every returned event matches the requested status.
-6. A `Map` keyed by the stable source ID collects events and replaces duplicates across pages.
-7. A successful first page with zero reported listings returns an empty array. Otherwise collection returns only after the unique count reaches the reported total.
-8. A page that makes no progress, a short page before all records are collected, or the page cap causes an error. The function does not return a silently truncated partial result.
-
-Devpost's live results can change during collection. The count checks detect some inconsistencies but do not provide a snapshot guarantee.
-
-## Source limitations and pending work
-
-- The listing endpoint is used by Devpost's own website; it is not a guaranteed public API contract. Requests can be blocked. Cloudflare Worker access still needs verification.
-- Submission dates are formatted strings, not precise event timestamps. Preserve their meaning when normalizing; submission periods are not necessarily event start/end times.
-- Full descriptions and other detailed fields may require a separate detail source.
-- Shared normalized event validation, minimal Devpost normalization, and Drizzle persistence helpers are implemented. Remote D1 setup, migration application, scheduling/deployment, rate-limit backoff, bounded retries, and frontend integration remain pending. HTTP failures currently fail the run immediately.
-
-## Package and compiler setup
-
-`@repo/config` provides settings; `@repo/core` provides runtime validation and inferred types; `@repo/db` provides the Drizzle client and queries. Cloudflare Worker types and TypeScript are development dependencies. The compiler uses Worker globals, strict checks, ES2022, bundler module resolution, and no emitted output. Shared packages export TypeScript source directly for the app bundler. Cheerio has been removed.
-
-## Review
-
-See `docs/review.md` for verified behavior and the remaining deployment, freshness, and rate-limit work. Open/upcoming are source submission states; actual event dates may remain unknown. URLs in normalized events are restricted to HTTP(S); image downloads additionally require HTTPS. Missing DB/R2 bindings or invalid public URL configuration fail the scheduled handler before source requests begin.
+- `@repo/config/sources` owns the Devpost JSON endpoint, open/upcoming filters, 30-second timeout, 50-page safety cap, and 500 ms page delay. Each request consumes the shared external budget. No HTML parser/browser is used.
+- `@repo/core/schemas/devpost` validates each complete page, including positive source IDs, titles, URLs, recognized statuses, and pagination. Source extra fields are preserved. Validation rejects the entire page when an event fails.
+- A map deduplicates stable source IDs across pages. Collection returns only after the unique count equals the reported total. A repeated/no-progress page, premature short page, changed total, exhausted budget, or page cap rejects incomplete results. A genuinely empty first page returns an empty catalogue. Live pagination still has no snapshot guarantee.
+- `@repo/core/schemas/event` and `event-filters` own the normalized product contracts. `@repo/db` provides Drizzle queries and stable source-key upserts. Unknown actual dates and ambiguous structured locations remain unknown; Devpost submission-period strings are preserved rather than treated as actual event dates.
+- The listing endpoint is used by Devpost's website and is not a guaranteed public API. HTTP 429/403, challenges, timeouts, and malformed data fail collection. Bounded retries/backoff are pending; no CAPTCHA bypass is implemented.
+- Missing source records are not automatically marked ended. Stale-listing reconciliation, detailed descriptions, image garbage collection, and frontend integration remain pending. The web Worker is a separate deployment and still needs its own D1 binding/query integration.

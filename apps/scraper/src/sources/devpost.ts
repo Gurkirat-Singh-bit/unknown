@@ -20,7 +20,7 @@ export async function scrapeDevpost(budget = new RequestBudget()): Promise<Devpo
     if (!budget.take()) throw new Error('Devpost collection exhausted its external request budget')
     const response = await fetch(url, {
       signal: AbortSignal.timeout(config.requestTimeoutMs),
-      redirect: 'error',
+      redirect: 'manual',
     })
 
     if (!response.ok) {
@@ -40,8 +40,9 @@ export async function scrapeDevpost(budget = new RequestBudget()): Promise<Devpo
     }
 
     const { hackathons, meta } = result.data
-    if (hackathons.some((event) => !config.statuses.some((status) => status === event.open_state))) {
-      throw new Error(`Devpost page ${page} returned records outside the requested status`)
+    const unexpected = hackathons.filter((event) => !config.statuses.some((status) => status === event.open_state))
+    if (unexpected.length) {
+      throw new Error(`Devpost page ${page} returned records outside the requested status: ${unexpected.map((event) => `${event.id}:${event.open_state}`).join(', ')}`)
     }
     const previousCount = events.size
 

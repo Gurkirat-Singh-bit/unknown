@@ -2,6 +2,15 @@ import { images } from '@repo/config/images'
 import type { Event } from '@repo/core/schemas/event'
 import { RequestBudget } from '../request-budget'
 
+// The download/cache pipeline works with both local R2 and production KV.
+export interface ImageStorage {
+  head(key: string): Promise<{ customMetadata?: Record<string, string> } | null>
+  put(key: string, bytes: Uint8Array, options: {
+    httpMetadata: { contentType: string; cacheControl: string }
+    customMetadata: Record<string, string>
+  }): Promise<unknown>
+}
+
 export function parseImageBaseUrl(value: string): URL {
   const url = new URL(value)
   if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash) {
@@ -47,7 +56,7 @@ async function readImage(response: Response): Promise<Uint8Array> {
   return bytes
 }
 
-async function prepareImage(event: Event, bucket: R2Bucket, publicBaseUrl: URL) {
+async function prepareImage(event: Event, bucket: ImageStorage, publicBaseUrl: URL) {
   if (!event.imageUrl) return null
   const sourceUrl = new URL(event.imageUrl)
   if (sourceUrl.protocol !== 'https:') throw new Error('Source images must use HTTPS')
@@ -64,11 +73,11 @@ async function prepareImage(event: Event, bucket: R2Bucket, publicBaseUrl: URL) 
   }
 }
 
-async function uploadImage(plan: NonNullable<Awaited<ReturnType<typeof prepareImage>>>, bucket: R2Bucket) {
+async function uploadImage(plan: NonNullable<Awaited<ReturnType<typeof prepareImage>>>, bucket: ImageStorage) {
   const { sourceUrl, key } = plan
   const response = await fetch(sourceUrl, {
     signal: AbortSignal.timeout(images.requestTimeoutMs),
-    redirect: 'error',
+    redirect: 'manual',
   })
   if (!response.ok) {
     await response.body?.cancel()
@@ -86,14 +95,14 @@ async function uploadImage(plan: NonNullable<Awaited<ReturnType<typeof prepareIm
   })
 }
 
-export async function storeEventImage(event: Event, bucket: R2Bucket, publicBaseUrl: URL): Promise<Event> {
+export async function storeEventImage(event: Event, bucket: ImageStorage, publicBaseUrl: URL): Promise<Event> {
   const plan = await prepareImage(event, bucket, publicBaseUrl)
   if (!plan) return event
   if (plan.needsDownload) await uploadImage(plan, bucket)
   return { ...event, imageUrl: plan.publicUrl }
 }
 
-export async function storeEventImages(events: Event[], bucket: R2Bucket, publicBaseUrl: URL, budget: RequestBudget): Promise<Event[]> {
+export async function storeEventImages(events: Event[], bucket: ImageStorage, publicBaseUrl: URL, budget: RequestBudget): Promise<Event[]> {
   const result: Event[] = events.map((event) => ({ ...event, imageUrl: null }))
   const pending = []
   const plans = new Map<string, NonNullable<Awaited<ReturnType<typeof prepareImage>>>>()

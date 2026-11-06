@@ -83,10 +83,10 @@ test('rejects HTTP failures, HTML/SVG, empty images, redirects and insecure URLs
     await expect(storeEventImage(event('invalid'), bucket, baseUrl)).rejects.toThrow()
   }
   globalThis.fetch = Object.assign(async (_input: string | URL | Request, options?: RequestInit) => {
-    expect(options?.redirect).toBe('error')
-    throw new TypeError('Redirect disallowed')
+    expect(options?.redirect).toBe('manual')
+    return new Response(null, { status: 302, headers: { location: 'https://cdn.example.com/other.png' } })
   }, { preconnect: originalFetch.preconnect }) as typeof fetch
-  await expect(storeEventImage(event('redirect'), bucket, baseUrl)).rejects.toThrow('Redirect disallowed')
+  await expect(storeEventImage(event('redirect'), bucket, baseUrl)).rejects.toThrow('HTTP 302')
   await expect(storeEventImage({ ...event('http'), imageUrl: 'http://cdn.example.com/image' }, bucket, baseUrl)).rejects.toThrow('HTTPS')
 })
 
