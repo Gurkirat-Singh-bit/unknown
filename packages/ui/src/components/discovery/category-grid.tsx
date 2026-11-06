@@ -9,16 +9,8 @@ import { UsersIcon } from "@phosphor-icons/react/dist/csr/Users";
 import { UsersThreeIcon } from "@phosphor-icons/react/dist/csr/UsersThree";
 
 const categories = [
-  { icon: TrophyIcon, title: "Hackathons", count: "1,200+ events" },
-  { icon: UsersIcon, title: "Developer Meetups", count: "800+ events" },
-  { icon: CodeIcon, title: "Coding Competitions", count: "500+ events" },
-  { icon: LightbulbIcon, title: "Workshops", count: "300+ events" },
-  {
-    icon: GlobeHemisphereWestIcon,
-    title: "Online Events",
-    count: "1,000+ events",
-  },
-  { icon: UsersThreeIcon, title: "Communities", count: "50+ communities" },
+  { icon: TrophyIcon, title: "Hackathons", count: "Browse current hackathons", href: "/hackathons" },
+  { icon: GlobeHemisphereWestIcon, title: "Online Events", count: "Browse online hackathons", href: "/hackathons?mode=online" },
 ];
 
 export function CategoryGrid({
@@ -39,13 +31,13 @@ export function CategoryGrid({
         </h2>
       </div>
       <div className="grid gap-x-10 lg:grid-cols-2">
-        {categories.map(({ icon: Icon, title, count }) => {
+        {categories.map(({ icon: Icon, title, count, href }) => {
           const active = activeCategory === title;
           return (
             <a
               key={title}
               id={`category-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
-              href="#hackathons"
+              href={href}
               aria-current={active ? "true" : undefined}
               aria-label={`${title}, ${count}`}
               onClick={() => onSelectCategory?.(title)}

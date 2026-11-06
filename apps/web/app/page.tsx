@@ -1,52 +1,27 @@
-"use client";
+import { Suspense } from "react";
+import { CategoryGrid, Navbar, SiteFooter, StatsRow, TrendingSection } from "@repo/ui";
+import { homeStats, latestEvents, cardEvent } from "../lib/events";
+import { HomeHero } from "../components/home-hero";
+import { StatisticsSkeleton } from "../components/statistics-skeleton";
 
-import { useMemo, useState } from "react";
-import { sampleEvents } from "../data/events";
-import {
-  CategoryGrid,
-  HeroSection,
-  Navbar,
-  SiteFooter,
-  TrendingSection,
-} from "@repo/ui";
-
+export const dynamic = "force-dynamic";
 export default function Home() {
-  const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const events = useMemo(
-    () =>
-      sampleEvents.filter((event) => {
-        const matchesCategory =
-          !categoryFilter ||
-          (categoryFilter === "Online Events"
-            ? event.mode === "Online"
-            : event.category?.toLowerCase() === categoryFilter.toLowerCase());
-        const matchesSearch =
-          !search ||
-          `${event.title} ${event.desc} ${event.place}`
-            .toLowerCase()
-            .includes(search.toLowerCase());
-        return matchesCategory && matchesSearch;
-      }),
-    [categoryFilter, search],
-  );
-  const selectCategory = (category: string) => {
-    setCategoryFilter(category);
-  };
-  return (
-    <main>
-      <Navbar />
-      <HeroSection
-        onSearch={setSearch}
-        resultCount={events.length}
-        submittedQuery={search}
-      />
-      <TrendingSection events={events} />
-      <CategoryGrid
-        activeCategory={categoryFilter}
-        onSelectCategory={selectCategory}
-      />
-      <SiteFooter />
-    </main>
-  );
+  return <main className="min-h-screen bg-canvas"><Navbar />
+    <HomeHero statisticsSlot={<Suspense fallback={<StatisticsSkeleton />}><HomeStatistics /></Suspense>} />
+    <Suspense fallback={<TrendingSection loading />}><LatestHackathons /></Suspense>
+    <CategoryGrid /><SiteFooter />
+  </main>;
+}
+async function HomeStatistics() {
+  const stats = await homeStats();
+  return <StatsRow statistics={[
+    { value: stats.total.toLocaleString(), label: "Hackathons" },
+    { value: stats.open.toLocaleString(), label: "Open registrations" },
+    { value: stats.upcoming.toLocaleString(), label: "Upcoming registrations" },
+    { value: stats.online.toLocaleString(), label: "Online events" },
+  ]} />;
+}
+async function LatestHackathons() {
+  const rows = await latestEvents(8);
+  return <TrendingSection events={rows.map(cardEvent)} />;
 }

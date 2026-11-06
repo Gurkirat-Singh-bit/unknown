@@ -4,7 +4,14 @@
   "type": "module",
   "scripts": {
     "test": "bun test",
-    "check-types": "tsc --noEmit && tsc -p tsconfig.tests.json"
+    "check-types": "tsc --noEmit && tsc -p tsconfig.tests.json",
+    "scrape:local": "bun scripts/scrape-local.ts",
+    "inspect:local": "bun scripts/inspect-local.ts",
+    "cf": "wrangler",
+    "deploy:check": "bun run cf deploy --dry-run --config wrangler.jsonc",
+    "db:migrate:remote": "bun run cf d1 migrations apply DB --remote --config wrangler.jsonc",
+    "deploy": "bun run cf deploy --config wrangler.jsonc",
+    "logs": "bun run cf tail --config wrangler.jsonc"
   },
   "dependencies": {
     "@repo/config": "*",
@@ -15,6 +22,7 @@
     "@cloudflare/workers-types": "^4.0.0",
     "@types/bun": "latest",
     "miniflare": "^4.20260730.0",
-    "typescript": "7.0.2"
+    "typescript": "7.0.2",
+    "wrangler": "4.157.0"
   }
 }

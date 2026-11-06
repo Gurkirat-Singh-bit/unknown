@@ -56,6 +56,17 @@ test('rejects HTTP failures and HTML challenge pages', async () => {
   await expect(scrapeDevpost()).rejects.toThrow('did not return JSON')
 })
 
+test('rejects redirects without following them or spending another request', async () => {
+  let calls = 0
+  globalThis.fetch = (async (_input: string | URL | Request, options?: RequestInit) => {
+    calls++
+    expect(options?.redirect).toBe('manual')
+    return new Response(null, { status: 302, headers: { location: 'https://example.com/other' } })
+  }) as typeof fetch
+  await expect(scrapeDevpost()).rejects.toThrow('HTTP 302')
+  expect(calls).toBe(1)
+})
+
 test('rejects invalid JSON and invalid page structures', async () => {
   mockResponses([new Response('{', { headers: { 'content-type': 'application/json' } })])
   await expect(scrapeDevpost()).rejects.toThrow()

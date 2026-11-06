@@ -1,2 +1,9 @@
 # deps
 node_modules/
+
+# Persistent local D1/KV, legacy R2, and exported images
+.local/
+
+# Wrangler runtime state and account-specific deployment config
+.wrangler/
+wrangler.jsonc

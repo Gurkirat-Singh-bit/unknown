@@ -10,11 +10,7 @@ const exploreLinks: FooterLink[] = [
 ];
 const categoryLinks: FooterLink[] = [
   { label: "Hackathons", href: "/hackathons" },
-  { label: "Developer meetups", href: "/#category-developer-meetups" },
-  { label: "Coding competitions", href: "/#category-coding-competitions" },
-  { label: "Workshops", href: "/#category-workshops" },
-  { label: "Online events", href: "/#category-online-events" },
-  { label: "Communities", href: "/#category-communities" },
+  { label: "Online events", href: "/hackathons?mode=online" },
 ];
 const aboutLinks: FooterLink[] = [
   { label: "About HackRadar", href: "/about" },
@@ -33,11 +29,11 @@ export function SiteFooter({
   return (
     <footer className="relative isolate mt-4 overflow-hidden bg-footer text-white">
       <div className="mx-auto w-full max-w-7xl px-6 pt-12 sm:px-10 sm:pt-16 lg:px-14 lg:pt-20">
-        <div className="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-4 lg:grid-cols-[1fr_1.3fr_1.1fr_0.7fr_2fr]">
+        <div className={`grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-4 ${socialLinks.length ? "lg:grid-cols-[1fr_1.3fr_1.1fr_0.7fr_2fr]" : "lg:grid-cols-[1fr_1.3fr_1.1fr_2fr]"}`}>
           <FooterGroup title="Explore" links={exploreLinks} />
           <FooterGroup title="Categories" links={categoryLinks} />
           <FooterGroup title="HackRadar" links={aboutLinks} />
-          <div>
+          {socialLinks.length > 0 && <div>
             <h2 className="mb-5 text-base font-semibold text-white">Social</h2>
             <div className="flex min-h-6 flex-col items-start gap-3">
               {socialLinks.map((link) => (
@@ -52,13 +48,13 @@ export function SiteFooter({
                 </a>
               ))}
             </div>
-          </div>
+          </div>}
           <div className="col-span-2 max-w-sm lg:col-span-1">
             <h2 className="text-lg font-semibold text-white">
               Find your next hackathon
             </h2>
             <p className="mt-4 mb-5 text-sm leading-6 text-white/70">
-              Compare dates, locations, and prizes.
+              Explore submissions, locations, and prizes.
             </p>
             <a
               href="/hackathons"

@@ -1,70 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/create-next-app).
+# HackRadar web
 
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses locally hosted DM Sans and Manrope variable fonts from `packages/ui/src/fonts`, loaded through `@font-face` rules in the shared UI stylesheet.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Cloudflare Workers
-
-The production build uses vinext with the Cloudflare Vite plugin. Configuration
-lives beside the app in `vite.config.ts` and `cloudflare.config.ts`. `build:next`
-remains available for a standard Next.js build (served with `start:next`).
-Use Node.js 24 alongside Bun 1.4.4; the typed Cloudflare config loader requires
-Node.js. The root `package.json` pins Bun through `packageManager` so Workers
-Builds selects a version that can read `bun.lock` (lockfile version 2).
-If the project has a `BUN_VERSION` build variable, set it to `1.4.4` as well.
-
-In Cloudflare Workers Builds, use these settings:
-
-- Root directory: repository root (`/`)
-- Install command: `bun install --frozen-lockfile`
-- Build command: `bun run build`
-- Deploy command: `bun run deploy`
-
-The deploy script uploads only the frontend Worker (`unknown`) using the existing
-build output. It has no database, R2, cache-service, or Cloudflare Images setup.
-Always run the build before deploying. The frontend continues to show the sample
-events already in the app.
-
-The Worker name in `cloudflare.config.ts` must match the Worker connected to
-Workers Builds.
-
-For local deployment, set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`
-(or authenticate with `bunx cf auth login`), then run from the repository root:
+Use Bun for dependencies and project commands. Vinext serves the app with Cloudflare's local Worker runtime and D1. The Cloudflare TypeScript config loader requires Node 24 alongside Bun.
 
 ```sh
-bun install --frozen-lockfile
-bun run build
-bun run deploy
+bun install
+bun run --cwd apps/web dev
 ```
 
-To validate deployment configuration without uploading:
+Open http://localhost:3001. The first development start reads a snapshot of the production catalogue and seeds an isolated local D1 database. Authenticate with Wrangler first if needed. Subsequent starts reuse the local database. The frontend always queries local D1 during development; thumbnails use the scraper's existing public KV image URLs.
+
+A cached Node executable at `.local/node` is used when present. If Node is installed outside PATH, set `HACKRADAR_NODE` to its executable before starting development. Bun remains the command runner and package manager.
+
+## Refresh local data
 
 ```sh
-bun run --cwd apps/web deploy:check
+bun run --cwd apps/web db:pull
+bun run --cwd apps/web db:seed
 ```
+
+`db:pull` reads event records with a SELECT query, without interrupting production traffic. `db:seed` applies shared migrations and replaces only local event records. IDs and timestamps are preserved. Both the seed command and Vite use database ID `4db9817a-d5cc-4c4f-ad6e-1eac61bbac64` and persistence directory `apps/web/.local/state`. Snapshots, migration history, and local databases stay in the ignored `.local/` directory. Stop the development server before replacing local data.
+
+The standard Next command is available as `bun run --cwd apps/web dev:next`; it does not supply Cloudflare Worker bindings. Use Vinext for the database-backed application.
+
+## Runtime
+
+The frontend Worker is `unknown`. Its server components read the `unknown-events` D1 database via the `DB` binding in `cloudflare.config.ts`. No database binding or credentials are sent to the browser. Images are served by `unknown-scraper` from its existing KV namespace. The web app needs no image storage binding.
+
+The home page shows eight latest hackathons. The catalogue lists twelve per page with literal search, source-provided countries, remote attendance, tags, registration status, attendance mode, and stable sorting. Detail URLs use source and source ID rather than titles. Missing records return 404; database failures offer a retry. Production never substitutes sample events.
+
+Country filters use stored country values. Venue names are shown on event cards and detail pages, not listed as countries. Records without country data remain explicitly unspecified. Remote / online filters the source attendance mode.
+
+## Cloudflare Workers Builds
+
+Use the repository root as the build root and configure these commands in the
+Worker's Cloudflare **Settings → Builds**:
+
+| Setting | Command |
+| --- | --- |
+| Build command | `bun run build` |
+| Production deploy command | `bun run deploy` |
+| Non-production branch deploy command | `bun run deploy:preview` |
+
+Both deploy commands reuse the completed build. The preview command uploads an
+unpromoted Worker version with a version preview URL; production traffic keeps
+using its current version. The production command publishes the frontend Worker.
+Neither command deploys the scraper or modifies its schedule.
+
+Do not use the dashboard's `npx wrangler preview` default. npm rejects this
+repository's Bun `devEngines` requirement before invoking Wrangler, and the typed
+Cloudflare/Vinext output uses the installed Vinext deployment adapter. Changing
+a package script does not change commands saved in the Cloudflare dashboard;
+the dashboard's non-production command must be updated as well.

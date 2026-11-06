@@ -7,6 +7,7 @@ import { CodeIcon as Code2 } from "@phosphor-icons/react/dist/csr/Code";
 import { MapPinIcon as MapPin } from "@phosphor-icons/react/dist/csr/MapPin";
 import { TrophyIcon as Trophy } from "@phosphor-icons/react/dist/csr/Trophy";
 import { UsersThreeIcon as Users } from "@phosphor-icons/react/dist/csr/UsersThree";
+import { EventImage } from "./event-image";
 import type { Hackathon } from "../../types/event";
 
 const coverStyle: Record<string, string> = {
@@ -64,6 +65,7 @@ export function EventCard({
         >
           {event.tagline}
         </div>
+        {event.imageUrl !== undefined && <EventImage src={event.imageUrl} className="absolute inset-0 z-[3] size-full" />}
       </div>
       <div className="flex flex-1 flex-col p-4 sm:p-[18px]">
         {(event.registrationStatus || event.featured) && (
@@ -86,6 +88,8 @@ export function EventCard({
             {event.desc}
           </p>
         )}
+        {event.organizer && <p className="mb-3 truncate text-xs text-muted">By {event.organizer}</p>}
+        {event.tags && event.tags.length > 0 && <div className="mb-4 flex flex-wrap gap-1.5">{event.tags.slice(0, 3).map((tag) => <span key={tag} className="max-w-full truncate rounded-full bg-brand-soft px-2.5 py-1 text-[10px] font-medium text-primary-strong">{tag}</span>)}</div>}
         <div className="mt-auto grid grid-cols-2 gap-x-3 gap-y-2.5 border-t border-line pt-3 text-[12px] leading-4 font-medium text-muted">
           <MetadataItem
             icon={<CalendarDays size={15} weight="regular" />}
@@ -94,7 +98,7 @@ export function EventCard({
           />
           <MetadataItem
             icon={<MapPin size={15} weight="regular" />}
-            label={event.place}
+            label={`${event.mode === "Unknown" ? "Mode not specified" : event.mode}${event.place && event.place !== event.mode ? ` · ${event.place}` : ""}`}
           />
           <MetadataItem
             icon={<Trophy size={15} weight="regular" />}
@@ -175,6 +179,7 @@ function MetadataItem({
   label: string;
   className?: string;
 }) {
+  if (!label) return null;
   return (
     <span className={`inline-flex min-w-0 items-center gap-2 ${className}`}>
       <span className="shrink-0 text-muted">{icon}</span>

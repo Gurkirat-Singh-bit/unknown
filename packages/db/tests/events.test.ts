@@ -87,3 +87,28 @@ test('supports more than one write batch and independent identities across sourc
   await upsertEvents(db, [...rows, event({ source: 'another-source' })])
   expect(await listEvents(db, { limit: 100 })).toHaveLength(52)
 })
+
+// The web catalogue shares these parameterized queries with the database package.
+import { browseEvents, eventByIdentity, latestEvents } from '../src/queries/catalogue'
+
+test('catalogue paginates duplicate titles with stable identity and literal search', async () => {
+  await upsertEvents(db, Array.from({ length: 14 }, (_, i) => event({ sourceId: String(i).padStart(2, '0'), title: 'Same title', organizer: i === 0 ? '100%_Builders' : null, tags: i === 1 ? ['AI'] : ['Web'] })))
+  const first = await browseEvents(db)
+  const second = await browseEvents(db, { page: 2 })
+  expect(first.total).toBe(14)
+  expect(first.rows).toHaveLength(12)
+  expect(second.rows).toHaveLength(2)
+  expect(new Set([...first.rows, ...second.rows].map(row => row.id)).size).toBe(14)
+  expect((await browseEvents(db, { q: '%_' })).total).toBe(1)
+  expect((await browseEvents(db, { q: "' OR 1=1 --" })).total).toBe(0)
+  expect((await browseEvents(db, { mode: 'invalid', status: 'invalid' })).total).toBe(14)
+  expect((await browseEvents(db, { tags: ['AI'] })).total).toBe(1)
+  expect((await eventByIdentity(db, 'devpost', '01'))?.tags).toEqual(['AI'])
+  expect(await eventByIdentity(db, 'devpost', 'missing')).toBeNull()
+  expect(await latestEvents(db, 8)).toHaveLength(8)
+})
+
+test('catalogue excludes other event types and expired records without scrape-age expiry', async () => {
+  await upsertEvents(db, [event({ scrapedAt: '2000-01-01T00:00:00Z' }), event({ sourceId: '2', type: 'meetup' }), event({ sourceId: '3', status: 'ended' })])
+  expect((await browseEvents(db)).total).toBe(1)
+})
