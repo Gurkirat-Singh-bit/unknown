@@ -29,3 +29,25 @@ The frontend Worker is `unknown`. Its server components read the `unknown-events
 The home page shows eight latest hackathons. The catalogue lists twelve per page with literal search, source-provided countries, remote attendance, tags, registration status, attendance mode, and stable sorting. Detail URLs use source and source ID rather than titles. Missing records return 404; database failures offer a retry. Production never substitutes sample events.
 
 Country filters use stored country values. Venue names are shown on event cards and detail pages, not listed as countries. Records without country data remain explicitly unspecified. Remote / online filters the source attendance mode.
+
+## Cloudflare Workers Builds
+
+Use the repository root as the build root and configure these commands in the
+Worker's Cloudflare **Settings → Builds**:
+
+| Setting | Command |
+| --- | --- |
+| Build command | `bun run build` |
+| Production deploy command | `bun run deploy` |
+| Non-production branch deploy command | `bun run deploy:preview` |
+
+Both deploy commands reuse the completed build. The preview command uploads an
+unpromoted Worker version with a version preview URL; production traffic keeps
+using its current version. The production command publishes the frontend Worker.
+Neither command deploys the scraper or modifies its schedule.
+
+Do not use the dashboard's `npx wrangler preview` default. npm rejects this
+repository's Bun `devEngines` requirement before invoking Wrangler, and the typed
+Cloudflare/Vinext output uses the installed Vinext deployment adapter. Changing
+a package script does not change commands saved in the Cloudflare dashboard;
+the dashboard's non-production command must be updated as well.

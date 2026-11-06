@@ -17,7 +17,8 @@
     "start:next": "next start",
     "dev:next": "next dev --port 3000",
     "db:pull": "bun scripts/db.mjs pull",
-    "db:seed": "bun scripts/db.mjs seed"
+    "db:seed": "bun scripts/db.mjs seed",
+    "deploy:preview": "vinext-cloudflare deploy --skip-build --no-promote"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
