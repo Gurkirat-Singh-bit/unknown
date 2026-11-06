@@ -2,31 +2,27 @@
 
 import type { ReactNode } from "react";
 import { ArrowRightIcon as ArrowRight } from "@phosphor-icons/react/dist/csr/ArrowRight";
-import { FireIcon as Flame } from "@phosphor-icons/react/dist/csr/Fire";
+import { EventCardSkeleton } from "./event-card-skeleton";
 import { EventCard } from "./event-card";
 import type { Hackathon } from "../../types/event";
 
-export function TrendingSection({ events = [] }: { events?: Hackathon[] }) {
+export function TrendingSection({ events = [], title = "Latest hackathons", loading = false }: { events?: Hackathon[]; title?: string; loading?: boolean }) {
   return (
     <section
       className="mx-auto w-full max-w-site scroll-mt-8 px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8"
       id="hackathons"
+      aria-busy={loading}
     >
       <SectionHeading action="Explore All Hackathons">
-        <Flame size={22} weight="regular" /> Trending Hackathons
+        {title}
       </SectionHeading>
+      {loading && <span role="status" className="sr-only">Loading latest hackathons</span>}
       <div className="grid auto-rows-fr grid-cols-1 items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-        {events.length ? (
+        {loading ? Array.from({ length: 8 }, (_, index) => <EventCardSkeleton key={index} />) : events.length ? (
           events.map((event) => (
             <EventCard
-              key={event.title}
-              event={{
-                ...event,
-                href: `/hackathons/${event.title
-                  .toLowerCase()
-                  .replace(/[^a-z0-9]+/g, "-")
-                  .replace(/(^-|-$)/g, "")}`,
-              }}
+              key={event.href ?? event.title}
+              event={event}
             />
           ))
         ) : (

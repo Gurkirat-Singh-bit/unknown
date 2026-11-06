@@ -1,0 +1,13 @@
+{
+  "name": "unknown-local-data",
+  "compatibility_date": "2026-11-01",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "unknown-events",
+      "database_id": "4db9817a-d5cc-4c4f-ad6e-1eac61bbac64",
+      "migrations_dir": "../../packages/db/migrations"
+    }
+  ],
+  "account_id": "8a2e287ea5fbc767f23fe38de1f741ac"
+}

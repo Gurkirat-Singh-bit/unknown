@@ -5,16 +5,16 @@
   font-family: "DM Sans";
   font-style: normal;
   font-weight: 100 1000;
-  font-display: swap;
-  src: url("./fonts/DM-Sans-variable.ttf") format("truetype");
+  font-display: optional;
+  src: url("./fonts/DM-Sans-variable.woff2") format("woff2");
 }
 
 @font-face {
   font-family: "Manrope";
   font-style: normal;
   font-weight: 200 800;
-  font-display: swap;
-  src: url("./fonts/Manrope-variable.ttf") format("truetype");
+  font-display: optional;
+  src: url("./fonts/Manrope-variable.woff2") format("woff2");
 }
 
 @theme {
@@ -96,5 +96,43 @@
   }
   ::-webkit-scrollbar-thumb:hover {
     background: var(--color-lime-ink);
+  }
+}
+
+/* In-panel scrolling stays quieter than the page's brand scrollbar. */
+.quiet-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #b8c5c7 transparent;
+  scrollbar-gutter: stable;
+  overscroll-behavior: contain;
+}
+
+@supports selector(::-webkit-scrollbar) {
+  .quiet-scrollbar {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+  }
+  .quiet-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .quiet-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .quiet-scrollbar::-webkit-scrollbar-thumb {
+    background: #b8c5c7;
+    border: 0;
+    border-radius: 999px;
+  }
+  .quiet-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #839598;
+  }
+  .quiet-scrollbar::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+  .quiet-scrollbar::-webkit-scrollbar-corner {
+    background: transparent;
   }
 }

@@ -1,11 +1,4 @@
-const statistics = [
-  { value: "1,248+", label: "Hackathons" },
-  { value: "500K+", label: "Community members" },
-  { value: "50+", label: "Countries" },
-  { value: "100K+", label: "Developers" },
-];
-
-export function StatsRow() {
+export function StatsRow({ statistics = [] }: { statistics?: { value: string; label: string }[] }) {
   return (
     <dl className="mx-auto mt-8 grid w-full max-w-4xl grid-cols-2 gap-y-6 border-t border-ink/10 pt-6 text-center sm:grid-cols-4 sm:divide-x sm:divide-ink/10">
       {statistics.map(({ value, label }) => (

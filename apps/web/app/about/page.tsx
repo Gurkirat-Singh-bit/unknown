@@ -5,7 +5,7 @@ import { ArrowUpRightIcon } from "@phosphor-icons/react/dist/ssr/ArrowUpRight";
 export const metadata: Metadata = {
   title: "About HackRadar",
   description:
-    "Find hackathons, coding competitions, workshops, and developer meetups with HackRadar.",
+    "Discover open and upcoming hackathons with HackRadar.",
 };
 
 export default function AboutPage() {
@@ -29,15 +29,15 @@ export default function AboutPage() {
           About HackRadar
         </h1>
         <p className="mt-6 max-w-2xl text-base leading-8 text-muted">
-          HackRadar brings hackathons, coding competitions, workshops, and
-          developer meetups into one place. Browse events by format, search by
-          topic, and compare dates and locations.
+          HackRadar brings open and upcoming hackathons into one place. Browse by
+          attendance mode, search by topic, and explore source-provided locations,
+          submission periods, and prizes.
         </p>
         <div className="mt-10 grid max-w-3xl gap-8 border-t border-line pt-8 sm:grid-cols-2">
           <div>
             <h2 className="text-xl font-bold text-ink">Browse events</h2>
             <p className="mt-3 text-sm leading-7 text-muted">
-              Check event dates, prize pools, and locations before opening the
+              Check submission periods, prize details, and locations before opening the
               details.
             </p>
             <a

@@ -1,7 +1,8 @@
 "use client";
 
-import { SearchBar } from "../search/search-bar";
+import type { ReactNode } from "react";
 import { StatsRow } from "./stats-row";
+import { SearchBar } from "../search/search-bar";
 import type { SearchHandler } from "../search/search-bar";
 
 export function HeroSection({
@@ -9,11 +10,15 @@ export function HeroSection({
   resultCount,
   submittedQuery,
   loading,
+  statistics,
+  statisticsSlot,
 }: {
-  onSearch: SearchHandler;
+  onSearch?: SearchHandler;
   resultCount?: number;
   submittedQuery?: string;
   loading?: boolean;
+  statistics?: { value: string; label: string }[];
+  statisticsSlot?: ReactNode;
 }) {
   return (
     <section id="top" className="relative isolate overflow-hidden bg-surface">
@@ -30,11 +35,11 @@ export function HeroSection({
           <h1 className="mx-auto max-w-6xl font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-ink sm:text-5xl lg:text-6xl xl:text-7xl">
             Discover Your Next
             <br />
-            <span className="text-ink">Hackathon</span> &amp; Developer Event
+            <span className="text-ink">Hackathon</span>
           </h1>
           <p className="mx-auto mt-6 mb-8 max-w-2xl text-sm leading-6 text-muted sm:text-base sm:leading-7">
-            Find hackathons, coding competitions, workshops, and developer
-            communities. Choose an event and start building.
+            Discover open and upcoming hackathons from across the developer world.
+            Find your challenge, bring your ideas, and start building.
           </p>
           <SearchBar
             onSearch={onSearch}
@@ -42,7 +47,7 @@ export function HeroSection({
             submittedQuery={submittedQuery}
             loading={loading}
           />
-          <StatsRow />
+          {statisticsSlot ?? (statistics && <StatsRow statistics={statistics} />)}
         </div>
       </div>
     </section>

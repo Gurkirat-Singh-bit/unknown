@@ -1,4 +1,4 @@
-export type EventMode = "All" | "Online" | "In-person" | "Hybrid";
+export type EventMode = "All" | "Online" | "In-person" | "Hybrid" | "Unknown";
 export type Hackathon = {
   title: string;
   tagline: string;
@@ -16,4 +16,6 @@ export type Hackathon = {
   featured?: boolean;
   participants?: number;
   teamSize?: string;
+  imageUrl?: string | null;
+  tags?: string[];
 };

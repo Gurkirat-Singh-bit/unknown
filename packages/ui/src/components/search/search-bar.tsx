@@ -22,7 +22,7 @@ export function SearchBar({
   loading = false,
   disabled = false,
 }: {
-  onSearch: SearchHandler;
+  onSearch?: SearchHandler;
   resultCount?: number;
   submittedQuery?: string;
   loading?: boolean;
@@ -76,7 +76,7 @@ export function SearchBar({
     setActiveIndex(-1);
     if (!term) {
       setQuery("");
-      onSearch("");
+      if (onSearch) onSearch(""); else window.location.href = "/hackathons";
       setIsOpen(true);
       return;
     }
@@ -84,6 +84,7 @@ export function SearchBar({
     setQuery(term);
     setIsOpen(false);
     try {
+      if (!onSearch) { window.location.href = `/hackathons?q=${encodeURIComponent(term)}`; return; }
       const result = onSearch(term);
       if (result && typeof result.then === "function") {
         setIsPending(true);
@@ -136,7 +137,7 @@ export function SearchBar({
     setQuery("");
     setSearchError(false);
     setActiveIndex(-1);
-    onSearch("");
+    if (onSearch) onSearch(""); else window.location.href = "/hackathons";
     setIsOpen(true);
     inputRef.current?.focus();
   };

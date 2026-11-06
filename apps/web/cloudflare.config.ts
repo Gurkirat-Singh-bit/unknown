@@ -9,6 +9,7 @@ export default defineConfig({
     assets: { notFoundHandling: "none" },
     env: {
       ASSETS: bindings.assets(),
+      DB: bindings.d1({ name: "unknown-events", id: "4db9817a-d5cc-4c4f-ad6e-1eac61bbac64" }),
     },
   }),
 });
